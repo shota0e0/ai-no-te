@@ -1,6 +1,6 @@
 # AI-no-Te Public Alpha publication checklist
 
-This checklist covers the candidate defined by `public-files.json`. It does not authorize publication, commit, or push.
+This checklist covers the candidate defined by `public-files.json`. Completing it does not itself publish or push the repository.
 
 - [x] Public Core and Experimental AINOTE Return are visibly separated.
 - [x] AI-no-Te is identified as an independent project and is not presented as an official AINOTE product.
@@ -17,5 +17,5 @@ This checklist covers the candidate defined by `public-files.json`. It does not 
 - [x] Supported Public Core environment is documented.
 - [x] Experimental compatibility evidence and unknown version fields are documented without guessing.
 - [x] Static scan and automated tests pass locally.
-- [ ] Owner has separately approved the final Git diff and actual GitHub publication.
+- [ ] The final Git diff has been reviewed and publication has been explicitly authorized.
 - [ ] Repository host settings, issue policy, and public contact route have been reviewed at publication time.

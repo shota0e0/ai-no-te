@@ -114,6 +114,43 @@ for (const safetyText of [
 ]) {
   if (!readmeJa.includes(safetyText)) fail(`README.ja practical safety notice missing: ${safetyText}`);
 }
+for (const safetyText of [
+  "### Before using Experimental AINOTE Return",
+  "non-public, unsupported AINOTE behavior",
+  "back up any important data",
+  "non-important note",
+  "does not guarantee how AINOTE or the device will behave",
+  "Use this feature only after reviewing and accepting these limitations",
+]) {
+  if (!readme.includes(safetyText)) fail(`README practical safety notice missing: ${safetyText}`);
+}
+for (const [label, enText, jaText] of [
+  ["backup guidance", "back up any important data", "必要なデータをバックアップ"],
+  ["non-important note", "non-important note", "重要でないノート"],
+  ["tested device", "Tested with AINOTE Air 2", "AINOTE Air 2で確認"],
+  ["unverified device models", "other AINOTE models have not been verified", "他の機種では未確認"],
+  [
+    "device, data, and compatibility disclaimer",
+    "does not guarantee how AINOTE or the device will behave, the integrity of stored data, or future compatibility",
+    "AINOTE本体や端末での動作、保存データの完全性、将来の互換性を保証しません",
+  ],
+]) {
+  if (!readme.includes(enText) || !readmeJa.includes(jaText)) fail(`EN/JA safety parity missing: ${label}`);
+}
+
+const internalProcessRules = [
+  /\bSTEP\s*[0-9A-Z]/i,
+  /\bOwner(?:'s)?\s+(?:decision|preference|review|approval|has)\b/i,
+  /vendor confirmation/i,
+  /final documentation (?:step|pass|edit)/i,
+  /separately approved UX step/i,
+];
+for (const relative of publicFiles.filter((entry) => entry.endsWith(".md"))) {
+  const markdown = await readFile(path.join(root, relative), "utf8");
+  for (const pattern of internalProcessRules) {
+    if (pattern.test(markdown)) fail(`internal project-management wording found in ${relative}`);
+  }
+}
 
 const formerName = "AINOTE" + "-LAB";
 for (const relative of publicFiles) {

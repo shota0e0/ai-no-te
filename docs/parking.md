@@ -1,11 +1,10 @@
-# Parking
+# Known UI issue
 
-## P-UX-01 — Returned content border / frame styling
+## Returned content border / frame styling
 
-- Status: parked; not implemented in Public Alpha UX Hardening STEP 4.
-- Current observation: returned content may display a border or frame.
-- Owner preference: no border, or a more natural presentation.
-- Public Alpha v0.1 blocker: no.
-- Revisit condition: after the AINOTE Return transport is confirmed.
+- Status: known visual issue; not a Public Alpha v0.1 blocker.
+- Current behavior: returned content may display a border or frame.
+- Preferred outcome: no border, or a more natural presentation.
+- Revisit after compatibility of the Experimental AINOTE Return transport is established.
 
-This item is visual polish only. It must not be used to change the experimental return transport while vendor confirmation is pending.
+This issue affects presentation only. Any future styling change should leave the experimental return transport unchanged.

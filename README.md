@@ -146,8 +146,6 @@ node src/cli.mjs notion --config config/public-alpha.local.json --execute
 
 Before execution, the CLI prints the safe destination name, selected-note count, operation summary, and resolved return mode. The adapter validates the schema, refuses duplicate Original hashes, creates only Pending Review records, and verifies that they remain pending. It never marks a record Approved.
 
-Live Notion execution was not performed during the final documentation step.
-
 ## Experimental AINOTE Return
 
 `experimental/ainote-return/` contains an optional path that can create a new AINOTE note from a human-approved Clean or Interpreted result.
@@ -161,6 +159,14 @@ The workflow has been shared with the AINOTE team, but this repository is an ind
 The current caller requires an external `ainote_api.py` helper. That helper is not bundled, copied, downloaded, or redistributed because its redistribution rights have not been established. Users must lawfully obtain or locate a compatible copy, review its provenance and license, and set `AINOTE_API_HELPER` to its local path. A missing or unreadable helper fails clearly before the return operation begins.
 
 See [Experimental AINOTE Return setup and limitations](docs/experimental-ainote-return.md).
+
+### Before using Experimental AINOTE Return
+
+Experimental AINOTE Return relies on non-public, unsupported AINOTE behavior. AINOTE updates may cause it to stop working or produce unexpected results.
+
+Before writing to AINOTE, back up any important data. Start with a non-important note and confirm the behavior in your own environment.
+
+AI-no-Te does not guarantee how AINOTE or the device will behave, the integrity of stored data, or future compatibility. Use this feature only after reviewing and accepting these limitations.
 
 ## Security and privacy
 
@@ -184,6 +190,7 @@ Review [the publication checklist](docs/publication-checklist.md) before publish
 | Notion API configuration | `2026-03-11` |
 | Python for Experimental Return | Real local executable required; exact tested version not established |
 | AINOTE Desktop | Exact compatible build not established in public evidence |
+| AINOTE device | Tested with AINOTE Air 2; other AINOTE models have not been verified |
 | External helper | Compatible version, source, and license not established; user-supplied only |
 
 Unknown versions are documented without guessing. Independently record and validate the complete local environment before using Experimental AINOTE Return.
@@ -203,7 +210,7 @@ Unknown versions are documented without guessing. Independently record and valid
 - Collect reproducible compatibility evidence without publishing private data.
 - Revalidate Experimental AINOTE Return against explicitly recorded versions.
 - Prefer an official AINOTE return interface if one becomes available.
-- Revisit returned-content framing only in a separately approved UX step.
+- Explore a more natural presentation for returned-content framing.
 
 ## License
 

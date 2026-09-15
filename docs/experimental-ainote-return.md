@@ -16,7 +16,7 @@ The AINOTE team has indicated that no officially supported path currently exists
 - The caller checks pending local changes, duplicate titles, sync headroom, downloaded image metadata/hash, and unchanged existing note files.
 - Logs use an allowlist and must not contain credentials, private paths, note content, or destination identifiers.
 
-`--verify-only` reads the configured Notion return record. It is not an offline mode. Live validation and live writes were not performed for STEP 5.
+`--verify-only` reads the configured Notion return record. It is not an offline mode and does not write to AINOTE.
 
 ## Compatibility record
 

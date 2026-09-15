@@ -30,4 +30,4 @@ Public UX defaults are stored only in ignored `config/*.local.json` files. Desti
 
 The Clean fixture is rendered from deterministic semantic spacing categories. `clean-before.svg` is retained solely as synthetic comparison evidence and contains no user-derived content.
 
-The default CLI import preview is human-readable. Owner review may explicitly enable three synthetic note aliases with `--synthetic-preview`; the example config provides two synthetic destination labels. Machine-readable output remains available only when `--json` is requested. Both forms omit credentials and destination data-source IDs. The synthetic catalog does not read live AINOTE or Notion data and is blocked from external execution.
+The default CLI import preview is human-readable. The `--synthetic-preview` option enables three synthetic note aliases; the example config provides two synthetic destination labels. Machine-readable output remains available only when `--json` is requested. Both forms omit credentials and destination data-source IDs. The synthetic catalog does not read live AINOTE or Notion data and is blocked from external execution.
