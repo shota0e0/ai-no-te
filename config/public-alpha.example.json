@@ -1,0 +1,34 @@
+{
+  "preferences": {
+    "defaultReturnMode": "clean",
+    "defaultNotionDestination": "project-alpha"
+  },
+  "notion": {
+    "apiVersion": "2026-03-11",
+    "destinations": {
+      "project-alpha": {
+        "name": "Project Alpha",
+        "dataSourceId": "REPLACE_WITH_PROJECT_ALPHA_DATA_SOURCE_ID"
+      },
+      "project-beta": {
+        "name": "Project Beta",
+        "dataSourceId": "REPLACE_WITH_PROJECT_BETA_DATA_SOURCE_ID"
+      }
+    },
+    "credentialEnv": "NOTION_API_KEY",
+    "properties": {
+      "title": "Title",
+      "originalFile": "Original",
+      "originalSha": "Original SHA-256",
+      "cleanFile": "Clean",
+      "cleanSha": "Clean SHA-256",
+      "interpretedFile": "Interpreted",
+      "interpretedSha": "Interpreted SHA-256",
+      "reviewState": "Review state"
+    },
+    "states": {
+      "pending": "Pending Review",
+      "approved": "Approved"
+    }
+  }
+}

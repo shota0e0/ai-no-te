@@ -1,0 +1,23 @@
+{
+  "fixtureId": "public-alpha-synthetic-project-sketch-v1",
+  "title": "Synthetic project sketch",
+  "description": "A synthetic geometric sample demonstrating Original, minimally cleaned, and interpreted outputs.",
+  "provenance": "Created from geometric SVG primitives specifically for AI-no-Te Public Alpha v0.1. It is not derived from a user note, screenshot, or production account.",
+  "license": "CC0-1.0",
+  "containsPersonalData": false,
+  "assets": {
+    "original": { "file": "original.svg", "sha256": "5903F5580211F37C2294540FBDEE645A1C998A72C4E95D394D5E55152B178B33" },
+    "clean": { "file": "clean.svg", "sha256": "6A8027F43CB69AA02FB360FB9BFB60FC785890087680ADB0183940D69ACD9088" },
+    "interpreted": { "file": "interpreted.svg", "sha256": "8863B59991779EAD76E7E52FCACB52CED08606DEAC40114C0F505E20546A5A44" }
+  },
+  "relationship": {
+    "original": "Synthetic source-of-truth sketch.",
+    "clean": "Geometry-aligned redraw with minimal interpretation.",
+    "interpreted": "Structured workflow view that explicitly preserves Pending Review."
+  },
+  "layoutEvidence": {
+    "before": "clean-before.svg",
+    "after": "clean.svg",
+    "rule": "src/core/clean-layout.mjs"
+  }
+}

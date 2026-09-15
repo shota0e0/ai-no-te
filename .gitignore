@@ -1,0 +1,38 @@
+# Public Alpha candidate is an explicit allowlist; these local materials are not publishable.
+/.codex-remote-attachments/
+/artifacts/
+/experimental/*
+!/experimental/ainote-return/
+/experimental/ainote-return/*
+!/experimental/ainote-return/ainote-clean-return-poc.mjs
+!/experimental/ainote-return/invoke-ainote-clean-return-poc.ps1
+!/experimental/ainote-return/tests/
+/experimental/ainote-return/tests/*
+!/experimental/ainote-return/tests/ainote-clean-return-poc.test.mjs
+/tools/
+/video-showcase/
+
+# Owner-only legacy PoC files retained locally.
+/scripts/*
+!/scripts/validate-public-candidate.mjs
+/tests/notion-original-poc.test.mjs
+/tests/notion-clean-interpreted-poc.test.mjs
+/docs/notion-original-poc-owner-setup.md
+/docs/CURRENT_HANDOFF.md
+
+# Local configuration, credentials, caches, logs, and generated output.
+/.env
+/.env.*
+!/config/public-alpha.example.json
+/config/*.local.json
+*.log
+*.tmp
+*.bak
+*.pyc
+__pycache__/
+node_modules/
+coverage/
+dist/
+/tmp/
+.DS_Store
+Thumbs.db

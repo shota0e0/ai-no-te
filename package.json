@@ -1,0 +1,16 @@
+{
+  "name": "ai-no-te-public-alpha",
+  "version": "0.1.0-alpha.1",
+  "private": true,
+  "description": "AI-no-Te: an independent, unofficial Public Alpha for an Original-first AINOTE-to-Notion workflow.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "demo": "node src/cli.mjs",
+    "test": "node tests/public-core.test.mjs && node experimental/ainote-return/tests/ainote-clean-return-poc.test.mjs",
+    "validate:public": "node scripts/validate-public-candidate.mjs"
+  },
+  "license": "MIT"
+}

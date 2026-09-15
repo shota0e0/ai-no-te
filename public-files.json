@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "release": "Public Alpha v0.1 candidate",
+  "classifications": {
+    "PUBLIC": [
+      ".gitattributes",
+      ".gitignore",
+      "LICENSE",
+      "README.ja.md",
+      "README.md",
+      "config/public-alpha.example.json",
+      "docs/experimental-ainote-return.md",
+      "docs/parking.md",
+      "docs/public-boundary.md",
+      "docs/publication-checklist.md",
+      "experimental/ainote-return/ainote-clean-return-poc.mjs",
+      "experimental/ainote-return/invoke-ainote-clean-return-poc.ps1",
+      "experimental/ainote-return/tests/ainote-clean-return-poc.test.mjs",
+      "fixtures/public-alpha-v0.1/clean-before.svg",
+      "fixtures/public-alpha-v0.1/clean.svg",
+      "fixtures/public-alpha-v0.1/interpreted.svg",
+      "fixtures/public-alpha-v0.1/metadata.json",
+      "fixtures/public-alpha-v0.1/original.svg",
+      "package-lock.json",
+      "package.json",
+      "public-files.json",
+      "scripts/validate-public-candidate.mjs",
+      "src/cli.mjs",
+      "src/config.mjs",
+      "src/core/clean-layout.mjs",
+      "src/core/fixture.mjs",
+      "src/core/preview.mjs",
+      "src/core/review.mjs",
+      "src/core/selection.mjs",
+      "src/notion/adapter.mjs",
+      "tests/public-core.test.mjs"
+    ],
+    "EXPERIMENTAL_NOT_PUBLIC_YET": [],
+    "PRIVATE": [
+      ".codex-remote-attachments/**",
+      "artifacts/**",
+      "docs/notion-original-poc-owner-setup.md",
+      "tests/notion-*-poc.test.mjs",
+      "video-showcase/**"
+    ],
+    "GENERATED": [
+      "coverage/**",
+      "dist/**",
+      "**/__pycache__/**",
+      "**/*.pyc"
+    ],
+    "LOCAL_ONLY": [
+      ".env",
+      ".env.*",
+      "config/*.local.json",
+      "docs/CURRENT_HANDOFF.md",
+      "node_modules/**",
+      "scripts/*",
+      "tools/**"
+    ]
+  }
+}

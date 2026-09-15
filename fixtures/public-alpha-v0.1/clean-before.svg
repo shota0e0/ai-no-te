@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="420" viewBox="0 0 640 420">
+  <rect width="640" height="420" fill="#ffffff"/>
+  <text x="40" y="50" font-family="sans-serif" font-size="24" font-weight="600" fill="#111">Synthetic project sketch</text>
+  <rect x="65" y="105" width="225" height="160" rx="5" fill="none" stroke="#111" stroke-width="3"/>
+  <path d="M140 105 V265 M215 105 V265" stroke="#111" stroke-width="2"/>
+  <text x="84" y="180" font-family="sans-serif" font-size="20">Idea</text>
+  <text x="148" y="180" font-family="sans-serif" font-size="20">Review</text>
+  <text x="230" y="180" font-family="sans-serif" font-size="20">Ship</text>
+  <circle cx="455" cy="175" r="64" fill="none" stroke="#111" stroke-width="3"/>
+  <circle cx="455" cy="175" r="7" fill="#111"/>
+  <path d="M455 240 V310 M455 270 L420 300 M455 270 L490 300" stroke="#111" stroke-width="3" fill="none"/>
+  <text x="65" y="350" font-family="sans-serif" font-size="20">Goal: review the sample before publishing</text>
+</svg>
