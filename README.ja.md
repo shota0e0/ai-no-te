@@ -2,91 +2,168 @@
 
 [English](README.md)
 
-## プロジェクト概要
+AI-no-Teは、AINOTEの手書きノートをAIで整理し、Notionで確認して、将来はAINOTEへ戻すところまでをつなぐ独立プロジェクトです。
 
-AINOTEで自由に書いたノートをAIで整え、Notionで確認し、選んだ結果をAINOTEへ戻します。
+現在のリポジトリは、一般ユーザー向けの導入ツールだけではなく、AINOTEのプロダクト・開発チーム、技術レビューを行う方、共同開発者が、目的と到達点、技術上の制約を確認できる公開記録として整理しています。
 
-AI-no-Teは、この流れを試すための独立した実験プロジェクトです。
-
-元のノート（Original）は必ず残します。AIが作った内容で上書きすることはありません。
-
-**AI-no-Teは非公式プロジェクトです。AINOTEやNotionの公式製品ではありません。各サービスの運営元が開発・提供・サポートするものではなく、提携や公認も受けていません。**
+**Write freely. Organize later. — 自由に書いて、あとから整理する。**
 
 ## なぜ作ったのか
 
-AIを使ってノートを整理すると、元の内容とAIが作った結果が混ざりやすくなります。何を送るのか、どの結果を採用するのか、誰が確認したのかも分かりにくくなりがちです。
+AIを使うために、人が考え方や書き方を変える必要はありません。AINOTEでは自由に考えて書き、整理はあとからAIに任せる。AI-no-Teは、その流れを試すためのプロジェクトです。
 
-AI-no-Teでは、元のノート、AIが整えた結果、人が確認した結果を分けて扱います。認証情報や自分のノートを用意しなくても、付属のサンプルデータだけで操作の流れを試せます。
+ノートは次の3つに分けて扱います。
 
-「アイノテ」という名前には、人の思考を主役にしたままAIが「合の手」を入れることと、「AIの手」として作業を支えること、という二つの意味を込めています。
+- **Original**: AINOTEから書き出した元データ。上書きせずに残します。
+- **Clean**: 意味や図、おおまかな配置を保ちながら、手書き文字を活字にした結果です。
+- **Interpreted**: 同じ内容をもとに、構成や配置をより大きく整理した結果です。元にない事実は加えません。
 
-AI-no-Teは、AINOTEとは別に開発している非公式プロジェクトです。
+本リポジトリの処理でOriginalを上書きすることはありません。
 
-## ワークフロー
+## 現在のワークフロー
 
 ```text
-元のノート（Original）
-  -> CleanまたはInterpretedの候補
-  -> Pending Review
-  -> Human Reviewで確認・承認
-  -> 必要に応じてExperimental AINOTE Return
+AINOTE
+  -> PDFを手動で書き出す
+  -> PDF Input Adapter
+  -> OCR / 文字の読取り
+  -> Clean + Interpreted
+  -> User Notion
+  -> 例外がある場合だけ人が確認
+       -> Approved
+       -> Needs Review
 ```
+
+ここまでは、実際のAINOTE由来データとUser Notionを使って確認済みです。実データ、認証情報、Notionのレコード、検証用の非公開ファイルは公開対象に含めません。
+
+最終的には、必要な結果をAINOTEへ新しいノートとして戻すところまでを目指しています。公式経路でのテキストノート作成は確認済みです。画像を返す経路はいったん保留しています。
+
+## 現在の状況
+
+| 機能 | 状況 |
+|---|---|
+| AINOTEから書き出した実PDFの入力 | AINOTE Air 2で確認済み |
+| PDFページの確認と300 DPIのPNG化 | 確認済み |
+| OCR / 文字の読取り | 人が操作をつなぐ方式で確認済み |
+| Cleanの生成 | 確認済み |
+| Interpretedの生成 | 確認済み |
+| User Notionの流れ | 実環境で確認済み |
+| 例外がある場合だけ人が確認する運用 | 実環境で確認済み |
+| 公式経路でのAINOTEテキストノート作成・読戻し | 実環境で確認済み |
+| 公式経路でのAINOTE画像返却 | **保留** — 現在確認できる公開手段なし |
+| 実験的な画像返却 | Desktop内部の動作を使ったPoCでは確認済み。通常フローでは不使用 |
 
 ## 基本方針
 
-- **元のノートを必ず残します。** AIが作った結果でOriginalを置き換えません。
-- **AIの結果は人が確認します。** CleanまたはInterpretedを選ぶだけでは承認になりません。
-- **初期状態では外部へ書き込みません。** 通常の機能はdry-runで動き、Experimental AINOTE Returnも、実際のAINOTEへ接続せずに内容を確認できます。
-- **画面に機密情報を出しません。** 通常の表示には認証情報や内部の送信先IDを含めません。
-- **実験機能は通常の機能から分けています。** 特定のバージョンに依存する処理は`experimental/`以下にまとめています。
+- Originalとハッシュのつながりを残します。
+- CleanとInterpretedの役割を分けます。
+- 通常の処理は自動でApprovedにし、明らかな例外だけ人が確認します。
+- 公開する表示や記録に、認証情報、非公開の識別情報、実際のノート内容を含めません。
+- 技術的に動かせる内部経路より、公式に公開された方法を優先します。
 
-## デモ
+## Notionでの確認
 
-次のコマンドで、接続や書き込みを行わないデモを実行できます。
+通常ユーザー向けの構成は次のとおりです。
+
+```text
+AI-no-Te
+└─ AI-no-Te Imports
+```
+
+項目は6つだけです。
+
+| 項目 | 内容 |
+|---|---|
+| Title | ノート名 |
+| Original | 元PDFと選択したページ画像 |
+| Clean | 配置変更を最小限にした活字化結果 |
+| Interpreted | 構成をより大きく整理した活字化結果 |
+| Return target | Use Default、Clean、Interpreted |
+| Review state | Pending Review、Approved、Needs Review |
+
+OCR、配置、生成元、プロンプト、モデル、ハッシュ、失敗履歴などの開発用情報は、Userデータベースへ出しません。詳しくは[Notionプロファイル](docs/notion-profiles.md)を参照してください。
+
+### 例外がある場合だけ人が確認する
+
+この方針を初めて説明するときはHuman-on-exceptionと呼んでいます。`Pending Review`は、処理中または判定前だけ使う一時状態です。処理が終わったUserレコードは、次の5つに当てはまらなければ`Approved`になります。
+
+1. OCR結果に明らかな異常がある
+2. 必要なファイルがない
+3. 状態が矛盾している
+4. 現在使う成果物の生成に失敗している
+5. 返す内容を決められない
+
+例外があれば`Needs Review`になり、人が確認します。重み付きスコア、総合点、細かな信頼度判定は使いません。返す内容の選択と確認結果は別に扱います。
+
+## AINOTEへ戻す処理
+
+### 公式経路
+
+AINOTEの公式Skillの資料と実機確認で、次の動作を確認しています。
+
+- 新しいノートの作成
+- フォルダの作成
+- Markdown／テキスト内容の作成
+- ノート内容の読戻し
+- 書込み後に必要な場合の公式同期処理
+
+[公式Skill Return adapter](docs/official-skill-return.md)は現在プレビュー専用です。次の公開OpenModel経路を使い、新しいノートを作る計画を表示します。
+
+- `POST /open-model-note/file/create`
+- `GET /open-model-note/file/content`
+
+現在のUser項目をそのまま受け取り、`Use Default -> Clean`を解決します。Originalを更新・削除・上書きする処理はありません。
+
+Markdown画像の実機確認では、HTTPS、data URI、ローカルパス、`file://`の記法が文字列として保存されることを確認しました。ただし、AINOTEの画面ではいずれも画像として表示されませんでした。公開資料で確認できる画像挿入、添付、ファイル送信の経路も見つかっていません。このため、公式経路での画像返却はいったん保留しています。
+
+### 実験的な調査
+
+`experimental/ainote-return/`では、公開されていないAINOTE Desktopの通信先と内部データの前提を使い、画像を含む返却PoCまで技術的に確認しました。現在の通常フローでは使わず、対応済みの連携機能としても扱いません。
+
+この経路は公開された公式OpenModel経路ではなく、実験的な調査用実装です。特定のバージョンに依存し、公式のサポート対象外です。公開されていないAINOTEの動作に依存しているため、AINOTEの更新後に動かなくなる可能性があります。公開された公式OpenModel APIではなく、互換性は保証されません。実装は通常フローから分離し、調査記録として残しています。詳しい境界は[ExperimentalディレクトリのREADME](experimental/ainote-return/README.md)にまとめています。
+
+### 画像返却を保留している理由
+
+内部の仕組みを使って無理に画像を返すより、公式に公開・案内された経路を優先したいと考えています。AINOTE側で画像挿入や添付の公式経路が公開された場合は、Original／Clean／Interpretedの選択やNotionの確認方法を変えずに、通信部分だけを差し替えられる構成にしています。
+
+テキストノートを作れることは大切な確認結果ですが、選択したClean／Interpreted画像を戻せないため、AI-no-Teの一連の流れが完成したとは扱いません。
+
+## 公開リポジトリに含むもの
+
+- PDF Input Adapterとハッシュ記録
+- 人が操作をつなぐOCR／Clean／Interpreted処理
+- User／Development用Notion項目定義とoffline preview
+- 5条件だけを使う自動確認
+- 公式テキストノート作成のpreview adapter
+- 架空データを使うデモと検証
+- 通常フローから分離したExperimental Return PoCと注意事項
+
+公開されているNotion向けコマンドはプレビュー専用で、`--execute`を拒否します。User Notionの実際の流れは手元の非公開環境で確認済みですが、認証情報、送信用の手元のスクリプト、実レコード、実データは公開候補に含めません。
+
+公開候補は`public-files.json`の`PUBLIC`一覧で決まります。分類は[公開範囲の説明](docs/public-boundary.md)を参照してください。
+
+## デモと確認用データ
+
+外部へ接続しないデモを実行できます。
 
 ```console
 npm run demo
 ```
 
-リポジトリ内の画像は、検証用に作ったサンプルです。
-
 | Original | Clean | Interpreted |
 |---|---|---|
-| ![検証用のOriginal](fixtures/public-alpha-v0.1/original.svg) | ![検証用のClean](fixtures/public-alpha-v0.1/clean.svg) | ![検証用のInterpreted](fixtures/public-alpha-v0.1/interpreted.svg) |
+| ![検証用Original](fixtures/public-alpha-v0.1/original.svg) | ![検証用Clean](fixtures/public-alpha-v0.1/clean.svg) | ![検証用Interpreted](fixtures/public-alpha-v0.1/interpreted.svg) |
 
-Cleanの余白調整は、[調整前](fixtures/public-alpha-v0.1/clean-before.svg)と[調整後](fixtures/public-alpha-v0.1/clean.svg)で比較できます。これらのSVGは、基本図形を使って本リポジトリ用に作成しました。手書きの内容、個人のノート、スクリーンショット、本番アカウントのデータ、AI生成画像は含まれていません。
+Cleanの[調整前](fixtures/public-alpha-v0.1/clean-before.svg)と[調整後](fixtures/public-alpha-v0.1/clean.svg)も比較できます。いずれも、このリポジトリ用に作った架空データです。
 
-## Public Alphaでできること
+コマンド、安全上の注意、現在確認済みの流れと公開previewの違いは、[Getting Startedガイド](docs/getting-started.ja.md)にまとめています。
 
-通常の機能（Public Core）では、次の内容を試せます。
+## インストールと検証
 
-- Original／Clean／Interpretedのサンプルと、ファイルが変わっていないことを確かめるための情報
-- 同じ入力から同じ結果を作るCleanの余白調整
-- ノートの選択とSelect All
-- ノートごとの返却内容の指定
-- レビュー状態の管理
-- 外部へ接続せずに使えるCLIと、取り込み前の内容確認
-- 明示的に実行しない限りdry-runで動くNotion連携
-
-OCR、画像の領域分割、AIによる画像生成、AINOTEからの実データ取得、自動承認、大規模なGUI、AINOTE Returnの互換性保証は含まれていません。
-
-公開するファイルは、`public-files.json`の`PUBLIC`欄で指定しています。この一覧にないファイルは公開対象ではありません。
-
-## CleanとInterpreted
-
-- **Clean**は、元の内容をなるべく変えずに、見た目や余白を整えます。
-- **Interpreted**は、元の内容をもとにAIが一歩踏み込んで整理します。
-
-初期設定はCleanです。必要なノートだけInterpretedに変えられます。ただし、どちらを選んでもHuman Reviewと承認が必要です。
-
-## インストール
-
-通常の機能を動かすには、次の環境が必要です。
+必要な環境:
 
 - Node.js 20以上
 - Windows 10/11、macOS、Linux
-
-リポジトリをクローンしたら、次のコマンドを実行します。
 
 ```console
 npm install --ignore-scripts
@@ -95,74 +172,36 @@ npm test
 npm run validate:public
 ```
 
-Public Alpha v0.1には、実行時に使う外部npmパッケージはありません。
+実行時に使う外部npmパッケージはありません。PDF入力には、別途Popplerの`pdfinfo`と`pdftoppm`が必要です。Popplerは同梱せず、自動インストールも行いません。
 
-## 設定
+## PDF入力
 
-`config/public-alpha.example.json`を、`config/*.local.json`形式のファイルへコピーします。この形式のファイルはGitの管理対象外です。送信先に入っている仮の値は手元の環境に合わせて変更し、認証情報は書き込まないでください。
-
-普段使う返却内容とNotionの送信先を保存できます。
+AINOTEからPDFを手動で書き出し、内容を確認してからページを選びます。
 
 ```console
-node src/cli.mjs preferences --config config/public-alpha.local.json --set-return-mode clean
-node src/cli.mjs preferences --config config/public-alpha.local.json --set-destination project-a
+node src/cli.mjs pdf inspect --input "note.pdf"
+node src/cli.mjs pdf render --input "note.pdf" --pages 2
 ```
 
-保存した設定は、機密情報を伏せた状態で確認できます。
+Popplerを使い、ページ順と縦横比を保ったまま300 DPIのPNGにします。新しい非公開の保存先には、内容を変えていない`original.pdf`、選択したページPNG、PDF／PNGのハッシュを持つ`metadata.json`を保存します。Originalは上書きしません。詳しくは[PDF入力の手順](docs/getting-started.ja.md#pdf-input)を参照してください。
+
+## AI処理とNotionプレビュー
+
+処理用CLIは、人が読み取ったOCR JSONを取り込み、版付きのClean／Interpretedプロンプトを準備し、試行結果を記録して、採用する画像を確定します。CLIが単独でAIを呼ぶものではありません。
 
 ```console
-node src/cli.mjs preferences --config config/public-alpha.local.json
+node src/cli.mjs process notion-preview --job "typed-job" --profile user
 ```
 
-送信先の別名と表示名は画面に出ることがありますが、NotionのデータソースIDや認証情報は表示しません。
+公開コマンドは、手元のファイル同士のつながりを検証して、外部へ書き込まない計画を表示します。Notionへ送信せず、`--execute`は拒否します。[AI処理の手順](docs/ai-processing.md)と[Notion項目の説明](docs/notion-profiles.md)を参照してください。
 
-## dry-runで試す
+## セキュリティとプライバシー
 
-外部へ書き込まずに、取り込む内容を確認します。
-
-```console
-node src/cli.mjs notion --config config/public-alpha.local.json
-```
-
-画面の先頭には`DRY RUN — NO EXTERNAL WRITE`と表示されます。送信先、Select Allの状態、選択したノート数、各ノートの返却内容、Pending Reviewとして行う処理を確認できます。それぞれの設定が初期値なのか個別指定なのかも表示します。
-
-実際のサービスへ接続せずに試す場合は、3件のサンプルデータを使います。
-
-```console
-node src/cli.mjs notion --config config/public-alpha.example.json --synthetic-preview
-```
-
-`--json`を付けると、プログラムで扱いやすい形式で出力できます。サンプルデータを使った状態では外部へ書き込めません。
-
-## Notion連携
-
-Notionへの書き込みは任意です。実際に書き込むには、次の条件をすべて満たす必要があります。
-
-- `--execute`を付ける
-- 設定ファイルの仮の値を実際の値へ変更する
-- 指定した環境変数から認証情報を渡す
-- 有効な送信先を選ぶ
-- ノートを1件以上選ぶ
-
-```console
-node src/cli.mjs notion --config config/public-alpha.local.json --execute
-```
-
-実行前に、送信先名、選択したノート数、処理内容、返却内容を表示します。Notion側の項目を確認し、Originalのハッシュ値がすでに登録されている場合は処理を中止します。作成するのはPending Reviewのレコードだけです。処理後もPending Reviewのままであることを確認し、Approvedへ変更することはありません。
-
-## Experimental AINOTE Return
-
-`experimental/ainote-return/`には、Human Reviewで承認したCleanまたはInterpretedの結果を使い、AINOTEにノートを新規作成する機能があります。
-
-この機能は非公式で、まだ実験段階です。特定のバージョンに依存しており、AINOTE公式のサポート対象外です。公開されていないAINOTEの動作に依存しているため、AINOTEの更新後に動かなくなる可能性があります。公式のAINOTE APIではなく、互換性は保証されません。AINOTEによる公認や提携はなく、公式サポートを受けた機能でもありません。
-
-実際に書き込むには、`--execute`を付ける必要があります。引数を付けずに起動した場合は、外部へ接続せずに内容だけを確認します。実行するには、Human Reviewで承認済みの対象が1件だけ存在している必要があります。返却結果は別のノートとして作成し、Originalは上書きしません。
-
-AI-no-Teは独立した実験プロジェクトです。この仕組みはAINOTEチームにも共有していますが、非公開のメッセージや、運営元との非公開のやり取りは転載していません。
-
-この機能を動かすには、外部の`ainote_api.py`補助スクリプトが必要です。再配布できるか確認が取れていないため、このリポジトリへの同梱、コピー、自動取得、再配布は行いません。利用できるファイルを各自で用意し、入手元とライセンスを確認してから、`AINOTE_API_HELPER`にファイルパスを設定してください。ファイルが見つからない場合や読み取れない場合は、AINOTEへ書き込む前にエラーで停止します。
-
-詳しい設定と制限は、[Experimental AINOTE Returnの説明](docs/experimental-ainote-return.md)を参照してください。
+- 認証情報、`.env`、個人のパス、非公開の識別情報、実際のノート、運営元との非公開のやり取りはコミットしません。
+- 実PDF、OCR本文、生成画像、Notionレコード、実機確認の証拠は非公開のまま扱います。
+- 公開サンプルはすべて架空のデータです。
+- Originalは残したままにします。
+- 確認結果からAINOTE Returnを自動実行することはありません。
 
 ### Experimental AINOTE Returnを使う前に
 
@@ -172,51 +211,39 @@ Experimental AINOTE Returnは、公開されていないAINOTEの動作を使う
 
 AI-no-Teは、AINOTE本体や端末での動作、保存データの完全性、将来の互換性を保証しません。内容を確認したうえで、各自の判断で利用してください。
 
-## セキュリティとプライバシー
-
-- 認証情報、`.env`、手元の設定、個人のファイルパス、非公開の識別情報、実際のノート内容、運営元との非公開のやり取りはコミットしないでください。
-- 公開するサンプルはすべて架空のデータです。実際のAINOTEやNotionのデータは必要ありません。
-- 通常の画面には、認証情報やNotionのデータソースIDを表示しません。
-- 補助スクリプトには、動作に必要な環境変数だけを渡します。Notionの認証情報は渡しません。
-- 初期状態では、通常の機能もExperimental AINOTE Returnも外部へ書き込みません。
-- 返却内容を選ぶことと、Human Reviewで承認することは別です。
-- Originalは残したままにし、このリポジトリの処理で上書きすることはありません。
-
-公開前に[公開チェックリスト](docs/publication-checklist.md)を確認してください。
+実際に書き込むには、`--execute`を付ける必要があります。返却結果は新しいノートとして作り、Originalは上書きしません。詳しくは[Experimental AINOTE Return](docs/experimental-ainote-return.md)を参照してください。
 
 ## 対応・検証環境
 
-| 項目 | 確認している範囲 |
+| 項目 | 現在確認している範囲 |
 |---|---|
-| 通常の機能を動かせるOS | Windows 10/11、macOS、Linux |
-| Experimental AINOTE Return用PowerShellスクリプト | Windows 10/11のみ |
+| 公開されているlocal tools | Windows 10/11、macOS、Linux |
 | Node.js | 20以上 |
-| Notion APIのバージョン | `2026-03-11` |
-| Experimental AINOTE Return用Python | 手元で実行できるPythonが必要。検証した正確なバージョンは未確認 |
-| AINOTE Desktop | 対応を確認できた正確なバージョンは、公開可能な記録では未確認 |
+| Notion API設定 | `2026-03-11` |
 | AINOTE端末 | AINOTE Air 2で確認。他の機種では未確認 |
-| 外部の補助スクリプト | 対応バージョン、入手元、ライセンスは未確認。利用者が用意したものだけを使用 |
-
-確認できていないバージョンは推測せず、未確認と記載しています。Experimental AINOTE Returnを使う場合は、自分の環境で使っているバージョンを記録し、事前に動作を確認してください。
+| 公式OpenModelの実機確認 | ノート作成・読戻しを確認。画像用の公開経路は未確認 |
+| Experimental wrapper | Windows 10/11。対応するDesktop／補助スクリプトの正確なバージョンは公開記録では未確定 |
 
 ## 既知の制限
 
-- Public Alphaは動作例を示すもので、本番サービスではありません。今後も同じように動くことを保証するものではありません。
-- Experimental AINOTE Returnは、公開されていないローカル通信や保存形式を前提にしています。
-- AINOTEの更新によって、データ構造、通信方法、同期処理、ローカルファイルが変わる可能性があります。
-- 対応する補助スクリプトを用意し、自分の環境で動作確認をしなければ、同じ手順を再現できません。
-- 公式の返却方法が利用できるようになった場合は、実験機能から切り替える予定です。
+- 公開リポジトリは技術検証中のPublic Alphaであり、本番サービスや互換性保証ではありません。
+- OCRと画像生成は人が操作をつなぐ方式で、結果は毎回同じとは限りません。
+- User Notionの流れは実環境で確認済みですが、公開Notion bridgeはプレビュー専用です。
+- Markdown画像が表示されず、公開された画像用経路も確認できないため、公式経路での画像返却は保留しています。
+- Experimental Returnは、公開されていない動作と特定バージョンに依存する調査用PoCです。
 
-## ロードマップ
+## 独立性
 
-- 実際のサービスへ接続せずに試せる状態を保つ。
-- Originalを必ず残し、初期状態をPending Reviewに保つ。
-- 個人データを公開せず、ほかの環境でも再現できる動作記録を集める。
-- 記録したバージョンごとにExperimental AINOTE Returnを確認する。
-- 公式のAINOTE返却方法が利用できるようになった場合は、そちらを優先する。
+AI-no-Teは独立した実験プロジェクトです。AINOTE、iFLYTEK、Notionの公式製品ではなく、各社による公認、提携、保守、サポートを示すものではありません。
+
+## 今後
+
+- Originalを残す方針とUser向け6項目を維持する。
+- 通常の自動確認は、5つの例外だけを対象にする。
+- 画像を扱える公式経路が公開された場合は、保留中の通信部分を差し替える。
+- Experimental Returnを通常フローから分離し、特定バージョンに依存する調査記録として維持する。
+- 実ノートや識別情報を公開せず、再現できる技術記録を増やす。
 
 ## ライセンス
 
-本リポジトリで作成したコードとドキュメントはMIT Licenseで提供します。サンプルデータには、`metadata.json`に記載したCC0-1.0の権利放棄が適用されます。外部の補助スクリプトのライセンスと再配布条件は、利用者自身で確認してください。
-
-AI-no-Teは、そのライセンスや再配布権を主張しません。
+本リポジトリで作成したコードと文書はMIT Licenseで提供します。架空のサンプルデータには、`metadata.json`に記載したCC0-1.0が適用されます。外部helperのライセンスや再配布権を本プロジェクトが主張するものではありません。

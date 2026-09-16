@@ -4,6 +4,7 @@
 /experimental/*
 !/experimental/ainote-return/
 /experimental/ainote-return/*
+!/experimental/ainote-return/README.md
 !/experimental/ainote-return/ainote-clean-return-poc.mjs
 !/experimental/ainote-return/invoke-ainote-clean-return-poc.ps1
 !/experimental/ainote-return/tests/
@@ -19,6 +20,7 @@
 /tests/notion-clean-interpreted-poc.test.mjs
 /docs/notion-original-poc-owner-setup.md
 /docs/CURRENT_HANDOFF.md
+/docs/images/
 
 # Local configuration, credentials, caches, logs, and generated output.
 /.env

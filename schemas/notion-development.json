@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "profile": "development",
+  "properties": [
+    { "key": "title", "name": "Title", "type": "title", "resolution": "unique-property-by-type", "required": true, "meaning": "Name of the note being inspected; mapped to the data source's unique title property without renaming it" },
+    { "key": "originalFile", "name": "Original", "type": "files", "required": true, "meaning": "Both Original PDF and selected page PNG" },
+    { "key": "originalSha", "name": "Original SHA-256", "type": "rich_text", "required": true, "meaning": "PDF hash; page hash retained in provenance" },
+    { "key": "cleanFile", "name": "Clean", "type": "files", "required": true, "meaning": "Selected typed Clean output" },
+    { "key": "cleanSha", "name": "Clean SHA-256", "type": "rich_text", "required": true, "meaning": "Exact selected Clean image hash" },
+    { "key": "interpretedFile", "name": "Interpreted", "type": "files", "required": true, "meaning": "Selected typed Interpreted output" },
+    { "key": "interpretedSha", "name": "Interpreted SHA-256", "type": "rich_text", "required": true, "meaning": "Exact selected Interpreted image hash" },
+    { "key": "reviewState", "name": "Review state", "type": "select", "required": true, "options": ["Pending Review", "Approved"], "default": "Pending Review", "meaning": "Explicit Human Review state" },
+    { "key": "returnTarget", "name": "Return target", "type": "select", "required": true, "options": ["Use Default", "Clean", "Interpreted"], "default": "Use Default", "meaning": "Intent only, independent of approval" }
+  ],
+  "bodySections": ["OCR / Layout", "Provenance / modes", "Processing / diagnostics"],
+  "optionalProperties": [],
+  "technicalDataPolicy": "Detailed technical page content; no credential, destination ID or absolute source path uploads"
+}

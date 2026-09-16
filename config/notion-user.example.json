@@ -1,0 +1,11 @@
+{
+  "preferences": { "defaultReturnMode": "clean", "defaultNotionDestination": "user-notes" },
+  "notion": {
+    "profile": "user",
+    "apiVersion": "2026-03-11",
+    "credentialEnv": "AINOTE_USER_NOTION_TOKEN",
+    "destinations": {
+      "user-notes": { "profile": "user", "name": "My Notes", "dataSourceId": "REPLACE_WITH_USER_DATA_SOURCE_ID" }
+    }
+  }
+}

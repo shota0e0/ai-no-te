@@ -177,7 +177,7 @@ async function notionJson(stage, endpoint, { token, method = "GET", body } = {})
   return data;
 }
 
-function validateNotionSchema(dataSource) {
+export function validateNotionSchema(dataSource) {
   const p = dataSource?.properties ?? {};
   const required = [
     [CONFIG.notionProperties.title, "title"],

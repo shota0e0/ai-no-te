@@ -1,6 +1,7 @@
 import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { loadNotionSchema, resolveProfileConfig, validateNotionProfileSchema } from "../src/notion/profiles.mjs";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const manifestPath = path.join(root, "public-files.json");
@@ -59,10 +60,37 @@ if (publicFiles.some((entry) => path.basename(entry).toLowerCase() === "ainote_a
   fail("external AINOTE helper must not be bundled in the PUBLIC allowlist");
 }
 
+for (const profile of ["user", "development"]) {
+  for (const file of [`config/notion-${profile}.example.json`, `schemas/notion-${profile}.json`, "src/notion/profiles.mjs", "docs/notion-profiles.md"]) {
+    if (!publicFiles.includes(file)) fail(`profile dependency missing from allowlist: ${file}`);
+  }
+  const config = JSON.parse(await readFile(path.join(root, `config/notion-${profile}.example.json`), "utf8"));
+  const resolved = resolveProfileConfig(config, profile);
+  if (resolved.defaultMode !== "clean") fail("profile example default must be Clean");
+  for (const destination of Object.values(config.notion.destinations)) {
+    if (destination.dataSourceId !== `REPLACE_WITH_${profile.toUpperCase()}_DATA_SOURCE_ID`) fail("profile destination must be a placeholder");
+  }
+  const schema = await loadNotionSchema(profile);
+  if (schema.properties.length !== (profile === "user" ? 6 : 9)) fail("profile field count changed");
+  if (schema.properties.some(p => !p.required || !p.meaning)) fail("profile schema must document required fields");
+  const syntheticProperties = Object.fromEntries(schema.properties.map(p => [p.name, {
+    id: `synthetic-${p.key}`, type: p.type, ...(p.options ? { select: { options: p.options.map(name => ({ name })) } } : {}),
+  }]));
+  if (profile === "development") {
+    syntheticProperties["ノート名"] = syntheticProperties.Title;
+    delete syntheticProperties.Title;
+    if (schema.properties.find(p => p.key === "title")?.resolution !== "unique-property-by-type") fail("development Title resolution must be unique-property-by-type");
+  }
+  await validateNotionProfileSchema(profile, { properties: syntheticProperties });
+}
+
 const experimentalSource = await readFile(
   path.join(root, "experimental/ainote-return/ainote-clean-return-poc.mjs"),
   "utf8",
 );
+const experimentalReadmePath = "experimental/ainote-return/README.md";
+if (!publicFiles.includes(experimentalReadmePath)) fail("Experimental Return boundary README is missing from PUBLIC");
+const experimentalReadme = await readFile(path.join(root, experimentalReadmePath), "utf8");
 for (const removedMode of ["--interpreted-flow", "--v21-flow", "--reuse-check"]) {
   if (experimentalSource.includes(removedMode)) {
     fail(`approval-provisioning mode remains reachable: ${removedMode}`);
@@ -70,6 +98,17 @@ for (const removedMode of ["--interpreted-flow", "--v21-flow", "--reuse-check"])
 }
 if (!experimentalSource.includes("AINOTE_API_HELPER is required")) {
   fail("experimental caller lacks a clear missing-helper failure");
+}
+for (const route of ["/note/createMixtureNote", "/note/addMixtureImgFile", "/note/saveRichMixtureNote", "/note/getDetail", "/sync/pushOneNote"]) {
+  if (!experimentalSource.includes(route) || !experimentalReadme.includes(`| \`${route}\``)) {
+    fail(`Experimental Return endpoint disclosure missing: ${route}`);
+  }
+}
+for (const dependency of ["db.json", "dir.json", "note_relations.json", "page.bin", "change.json", "note.log", "T5/page data model"]) {
+  if (!experimentalReadme.includes(dependency)) fail(`Experimental Return internal dependency disclosure missing: ${dependency}`);
+}
+for (const boundary of ["intentionally incompatible", "fails closed", "LOCAL_ONLY", "does not copy, vendor, download, or bundle", "Original is not overwritten", "There is no rollback"]) {
+  if (!experimentalReadme.includes(boundary)) fail(`Experimental Return boundary missing: ${boundary}`);
 }
 
 const readme = await readFile(path.join(root, "README.md"), "utf8");
@@ -83,10 +122,10 @@ const lockMetadata = JSON.parse(await readFile(path.join(root, "package-lock.jso
 if (packageMetadata.name !== "ai-no-te-public-alpha" || lockMetadata.name !== packageMetadata.name) {
   fail("repository-facing package name is inconsistent");
 }
-for (const requiredWarning of ["unofficial", "experimental", "version-specific", "unsupported"]) {
+for (const requiredWarning of ["experimental", "version-specific", "unsupported", "outside the published official openmodel api"]) {
   if (!readme.toLowerCase().includes(requiredWarning)) fail(`README warning missing: ${requiredWarning}`);
 }
-for (const requiredWarning of ["非公式", "実験段階", "特定のバージョンに依存", "公式のサポート対象外"]) {
+for (const requiredWarning of ["実験的な調査用実装", "特定のバージョンに依存", "公式のサポート対象外", "公開された公式OpenModel APIではなく"]) {
   if (!readmeJa.includes(requiredWarning)) fail(`README.ja warning missing: ${requiredWarning}`);
 }
 if (!/\[日本語版\]\(README\.ja\.md\)/.test(readme)) {
@@ -95,8 +134,102 @@ if (!/\[日本語版\]\(README\.ja\.md\)/.test(readme)) {
 if (!/\[English\]\(README\.md\)/.test(readmeJa)) {
   fail("README.ja canonical language link is missing");
 }
+if (!/\[Getting Started guide\]\(docs\/getting-started\.md\)/.test(readme)) {
+  fail("README Getting Started link is missing");
+}
+if (!/\[Getting Startedガイド\]\(docs\/getting-started\.ja\.md\)/.test(readmeJa)) {
+  fail("README.ja Getting Started link is missing");
+}
+const gettingStarted = await readFile(path.join(root, "docs/getting-started.md"), "utf8");
+const gettingStartedJa = await readFile(path.join(root, "docs/getting-started.ja.md"), "utf8");
+for (const requiredFile of ["src/processing/poc.mjs", "src/processing/typed.mjs", "tests/processing.test.mjs", "tests/typed-processing.test.mjs", "docs/ai-processing.md", "prompts/clean-v1.txt", "prompts/interpreted-v1.txt", "prompts/interpreted-v2.txt", "prompts/ocr-v1.txt", "prompts/typed-clean-v1.txt", "prompts/typed-interpreted-v1.txt", "prompts/typed-interpreted-v2.txt"]) {
+  if (!publicFiles.includes(requiredFile)) fail(`AI processing file missing from PUBLIC: ${requiredFile}`);
+}
+const processingGuide = await readFile(path.join(root, "docs/ai-processing.md"), "utf8");
+const officialReturnSource = await readFile(path.join(root, "src/ainote/official-return.mjs"), "utf8");
+const officialReturnGuide = await readFile(path.join(root, "docs/official-skill-return.md"), "utf8");
+for (const file of ["src/ainote/official-return.mjs", "tests/official-return.test.mjs", "docs/official-skill-return.md"]) {
+  if (!publicFiles.includes(file)) fail(`Official Skill Return file missing: ${file}`);
+}
+for (const route of ["/open-model-note/file/create", "/open-model-note/file/content", "/open-model/sync"]) {
+  if (!officialReturnSource.includes(route)) fail(`Official Skill Return route missing: ${route}`);
+}
+for (const blocked of ["/note/createMixtureNote", "/note/addMixtureImgFile", "/note/saveRichMixtureNote", "/sync/pushOneNote", "db.json", "page.bin", "note.log"]) {
+  if (officialReturnSource.includes(blocked)) fail(`Official Skill Return contains internal dependency: ${blocked}`);
+}
+for (const term of ["NO_OFFICIAL_PATH_FOUND", "NOT_DOCUMENTED", "text-only Return is not an AI-no-Te full loop", "preview-only"]) {
+  if (!officialReturnGuide.includes(term)) fail(`Official Skill Return boundary missing: ${term}`);
+}
+for (const file of ["src/notion/processing-preview.mjs", "tests/processing-notion-preview.test.mjs"]) {
+  if (!publicFiles.includes(file)) fail(`Processing Notion preview file missing: ${file}`);
+}
+for (const text of [readme, readmeJa, gettingStarted, gettingStartedJa, processingGuide]) {
+  for (const term of ["process notion-preview", "Pending Review", "Approved", "Needs Review", "--execute"]) {
+    if (!text.includes(term)) fail(`Processing Notion preview guidance missing: ${term}`);
+  }
+}
+const profileSource = await readFile(path.join(root, "src/notion/profiles.mjs"), "utf8");
+const userSchema = await readFile(path.join(root, "schemas/notion-user.json"), "utf8");
+for (const term of ["OCR_SUSPICIOUS", "ARTIFACT_MISSING", "CONFLICTING_STATE", "GENERATION_FAILED", "TARGET_UNRESOLVED"]) {
+  if (!profileSource.includes(term)) fail(`Auto-review red flag missing: ${term}`);
+}
+for (const term of ["Pending Review", "Approved", "Needs Review"]) {
+  if (!userSchema.includes(term)) fail(`User review state missing: ${term}`);
+}
+for (const term of ["owner-visual-review.json", "preview-only", "not a Notion API payload", "processingMetadataSha256"]) {
+  if (!processingGuide.includes(term)) fail(`Processing preview boundary missing: ${term}`);
+}
+for (const required of ["operator-mediated", "non-deterministic", "Human Review", "Original", "image_gen", "processing-metadata.json", "not independently verified", "failed", "OCR is mandatory", "typed text", "ocr-raw.json", "ocr-normalized.json", "layout.json", "process finalize", "unknown", "uncertain"]) {
+  if (!processingGuide.includes(required)) fail(`AI processing guidance missing: ${required}`);
+}
+for (const promptPath of publicFiles.filter(entry => entry.startsWith("prompts/"))) {
+  const prompt = await readFile(path.join(root, promptPath), "utf8");
+  for (const required of ["Original", "overwrite", "Human Review", "not instructions"]) {
+    if (!prompt.includes(required)) fail(`Prompt invariant missing in ${promptPath}: ${required}`);
+  }
+}
+for (const requiredFile of ["src/pdf/input.mjs", "tests/pdf-input.test.mjs"]) {
+  if (!publicFiles.includes(requiredFile)) fail(`PDF Input file missing from PUBLIC: ${requiredFile}`);
+}
+for (const [label, document] of [["README", readme], ["README.ja", readmeJa], ["guide", gettingStarted], ["guide.ja", gettingStartedJa]]) {
+  for (const required of ["pdf inspect", "pdf render", "--pages", "300 DPI", "Original", "metadata.json", "Poppler"]) {
+    if (!document.includes(required)) fail(`${label} PDF guidance missing: ${required}`);
+  }
+}
+for (const document of [gettingStarted, gettingStartedJa]) {
+  for (const required of ["AINOTE_PDF_PDFTOPPM", "AINOTE_PDF_PDFINFO", "failure.json", "512 MiB", "page-002.png"]) {
+    if (!document.includes(required)) fail(`PDF setup/recovery guidance missing: ${required}`);
+  }
+}
+if (publicFiles.some(entry => /\.(?:pdf|exe|dll)$/i.test(entry))) fail("private PDFs and Poppler binaries must not be public candidates");
+if (!/\[日本語版\]\(getting-started\.ja\.md\)/.test(gettingStarted)) {
+  fail("Getting Started Japanese language link is missing");
+}
+if (!/\[English\]\(getting-started\.md\)/.test(gettingStartedJa)) {
+  fail("Getting Started English language link is missing");
+}
+for (const requiredText of [
+  "node src/cli.mjs notion --config config/public-alpha.example.json --synthetic-preview",
+  "Screenshot TODO",
+  "Back up important AINOTE data",
+  "non-important note",
+  "ainote_api.py",
+  "Original is not overwritten",
+]) {
+  if (!gettingStarted.includes(requiredText)) fail(`Getting Started guidance missing: ${requiredText}`);
+}
+for (const requiredText of [
+  "node src/cli.mjs notion --config config/public-alpha.example.json --synthetic-preview",
+  "Screenshot TODO",
+  "大切なデータをバックアップ",
+  "重要でないノート",
+  "ainote_api.py",
+  "Originalは上書きしません",
+]) {
+  if (!gettingStartedJa.includes(requiredText)) fail(`Getting Started Japanese guidance missing: ${requiredText}`);
+}
 for (const [label, enText, jaText] of [
-  ["not an official API", "not an official AINOTE API", "公式のAINOTE APIではなく"],
+  ["outside the published OpenModel API", "outside the published official OpenModel API", "公開された公式OpenModel APIではなく"],
   ["no compatibility guarantee", "There is no compatibility guarantee", "互換性は保証されません"],
   ["explicit execution", "Execution must be requested explicitly", "実際に書き込むには、`--execute`を付ける必要があります"],
   ["Original preservation", "Original is not overwritten", "Originalは上書きしません"],
@@ -139,7 +272,7 @@ for (const [label, enText, jaText] of [
 }
 
 const internalProcessRules = [
-  /\bSTEP\s*[0-9A-Z]/i,
+  /\bSTEP\s*[0-9]+[A-Z]?\b/i,
   /\bOwner(?:'s)?\s+(?:decision|preference|review|approval|has)\b/i,
   /vendor confirmation/i,
   /final documentation (?:step|pass|edit)/i,

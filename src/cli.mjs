@@ -21,6 +21,10 @@ import {
   toggleAll,
 } from "./core/selection.mjs";
 import { runNotionImport } from "./notion/adapter.mjs";
+import { pdfCommand } from "./pdf/input.mjs";
+import { processCommand } from "./processing/typed.mjs";
+import { processingNotionPreviewCommand } from "./notion/processing-preview.mjs";
+import { officialReturnPreviewCommand } from "./ainote/official-return.mjs";
 
 function option(args, name, fallback) {
   const index = args.indexOf(name);
@@ -53,6 +57,27 @@ export async function main(args = process.argv.slice(2), dependencies = {}) {
     typeof value === "string" ? value : `${JSON.stringify(value)}\n`,
   ));
   const command = args[0] ?? "demo";
+  if (command === "return") {
+    if (args[1] !== "official-preview") throw new Error("Return command supports official-preview only.");
+    const result = await officialReturnPreviewCommand(args.slice(2));
+    write(result);
+    return result;
+  }
+  if (command === "notion" && args.some(a => /^(--job|--processing-job)(=|$)/.test(a))) {
+    throw new Error("Processing jobs require process notion-preview --job; the existing notion upload flow does not accept them.");
+  }
+  if (command === "process") {
+    const result = args[1] === "notion-preview"
+      ? await processingNotionPreviewCommand(args.slice(2))
+      : await processCommand(args.slice(1));
+    write(result);
+    return result;
+  }
+  if (command === "pdf") {
+    const result = await pdfCommand(args.slice(1));
+    write(result);
+    return result;
+  }
   const configFile = path.resolve(
     option(args, "--config", path.join("config", "public-alpha.example.json")),
   );

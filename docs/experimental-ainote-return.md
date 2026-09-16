@@ -2,15 +2,17 @@
 
 ## Status and boundary
 
-This AI-no-Te component is optional, unofficial, experimental, version-specific, unsupported, and outside the stable Public Core. AI-no-Te is independent from the AINOTE product and team. This component uses undocumented AINOTE Desktop behavior and may stop working after any application update. It is not an official AINOTE API, and this repository claims no endorsement, partnership, maintenance, or support from the AINOTE team.
+This AI-no-Te research transport is optional, experimental, version-specific, unsupported, and outside the stable Public Core. AI-no-Te is independent from the AINOTE product and team. This transport uses AINOTE Desktop behavior that is not documented in the public OpenModel Skill interface and may stop working after any application update. It is not presented as a supported API, and this repository claims no endorsement, partnership, maintenance, or support from the AINOTE team.
 
-The AINOTE team has indicated that no officially supported path currently exists for creating a new AINOTE note containing the selected result. That status is paraphrased here only to explain why this code remains experimental.
+The installed official Skill documents OpenModel creation and read-back of a new Markdown note. A live probe confirmed that HTTPS, data URI, local-path, and `file://` image Markdown is stored, but none of those forms rendered as an image in the AINOTE UI. No published image insertion, attachment, or resource-upload route is confirmed, so official image Return is parked. This experimental component records the earlier image-bearing Return PoC and is separate from the documented Skill-to-Desktop OpenModel route. See the [official Skill Return capability record](official-skill-return.md).
+
+The PoC demonstrated image Return through undocumented Desktop endpoints and internal data assumptions. It is not invoked by the current normal PDF -> processing -> User Notion workflow and is not presented as a supported integration. The implementation is frozen as research evidence. Its exact endpoint, internal-file, legacy-schema, helper and failure boundaries are recorded in the [directory README](../experimental/ainote-return/README.md).
 
 ## Safety model
 
 - Default invocation is `--offline-check`; it performs no network or application write.
 - `--execute` is required for the return operation.
-- A unique existing Notion record must already be in the configured human-approved state and identify Clean or Interpreted as the selected return target.
+- A unique existing Notion record must already be in the configured Approved state and identify Clean or Interpreted as the selected return target.
 - This component does not create an approval record, automatically approve a record, or treat return-mode selection as approval.
 - The returned result is created as a new AINOTE note. Original is not overwritten.
 - The caller checks pending local changes, duplicate titles, sync headroom, downloaded image metadata/hash, and unchanged existing note files.
@@ -27,17 +29,17 @@ The AINOTE team has indicated that no officially supported path currently exists
 | Python | A real local Python executable; version not established |
 | Notion API | `2026-03-11` |
 | AINOTE Desktop | Exact compatible build not established in public evidence |
-| External helper | Compatible version/source/license not established; user-supplied only |
+| External helper | Found in the inspected installed official Skill; local compatibility and redistribution rights are not established |
 
-Because the two AINOTE-specific versions are not established, publication does not imply third-party reproducibility. Record and revalidate your own versions before any execution. Stop if observed routes, local files, schemas, or approval behavior differ.
+Because the two AINOTE-specific versions are not established, publication does not imply that third parties can reproduce the result. Record and revalidate your own versions before any execution. Stop if the observed routes, local files, schemas, or approval behavior differ.
 
 ## External helper
 
-The caller currently requires `ainote_api.py`. It is deliberately not bundled, copied, downloaded, or redistributed because its redistribution right has not been established.
+The caller currently requires `ainote_api.py`. The inspected local official Skill installation contains that helper, but this repository deliberately does not bundle, copy, download, or redistribute it because redistribution rights have not been established. It remains `LOCAL_ONLY` and must be selected explicitly.
 
 You must:
 
-1. Obtain or locate a compatible copy through a source you are authorized to use.
+1. Locate a compatible installed copy that you are authorized to use.
 2. Review its provenance, license, and behavior yourself.
 3. Set `AINOTE_API_HELPER` to its absolute local path.
 
@@ -108,4 +110,4 @@ The wrapper reads the Notion secret from the configured Windows Credential Manag
 
 ## Support expectation
 
-Issues may be useful as community evidence, but there is no compatibility SLA. Do not ask the AINOTE team to support this transport as an official feature. Prefer an official interface if one becomes available.
+Issue reports may provide useful community evidence, but there is no compatibility SLA. The AINOTE team is not expected to support this transport as an official feature. Prefer an official interface if one becomes available.

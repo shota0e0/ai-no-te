@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "profile": "user",
+  "properties": [
+    { "key": "title", "name": "Title", "type": "title", "required": true, "meaning": "Name of the note being reviewed" },
+    { "key": "originalFile", "name": "Original", "type": "files", "required": true, "meaning": "Unchanged exported PDF and selected Original page PNG" },
+    { "key": "cleanFile", "name": "Clean", "type": "files", "required": true, "meaning": "Typed text with minimal rearrangement" },
+    { "key": "interpretedFile", "name": "Interpreted", "type": "files", "required": true, "meaning": "Typed text with stronger restructuring" },
+    { "key": "reviewState", "name": "Review state", "type": "select", "required": true, "options": ["Pending Review", "Approved", "Needs Review"], "default": "Pending Review", "meaning": "Temporary, auto-approved, or human-on-exception review state" },
+    { "key": "returnTarget", "name": "Return target", "type": "select", "required": true, "options": ["Use Default", "Clean", "Interpreted"], "default": "Use Default", "meaning": "Return intent only; Use Default resolves to configured default (initially Clean), not approval" }
+  ],
+  "bodySections": [],
+  "optionalProperties": [],
+  "technicalDataPolicy": "Omitted from the user record; hashes remain in local plan asset references and private processing job"
+}

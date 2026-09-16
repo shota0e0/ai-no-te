@@ -1,0 +1,11 @@
+{
+  "preferences": { "defaultReturnMode": "clean", "defaultNotionDestination": "development-notes" },
+  "notion": {
+    "profile": "development",
+    "apiVersion": "2026-03-11",
+    "credentialEnv": "AINOTE_DEVELOPMENT_NOTION_TOKEN",
+    "destinations": {
+      "development-notes": { "profile": "development", "name": "Development Notes", "dataSourceId": "REPLACE_WITH_DEVELOPMENT_DATA_SOURCE_ID" }
+    }
+  }
+}
