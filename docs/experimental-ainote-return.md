@@ -6,7 +6,9 @@ This AI-no-Te research transport is optional, experimental, version-specific, un
 
 The installed official Skill documents OpenModel creation and read-back of a new Markdown note. A live probe confirmed that HTTPS, data URI, local-path, and `file://` image Markdown is stored, but none of those forms rendered as an image in the AINOTE UI. No published image insertion, attachment, or resource-upload route is confirmed, so official image Return is parked. This experimental component records the earlier image-bearing Return PoC and is separate from the documented Skill-to-Desktop OpenModel route. See the [official Skill Return capability record](official-skill-return.md).
 
-The PoC demonstrated image Return through undocumented Desktop endpoints and internal data assumptions. It is not invoked by the current normal PDF -> processing -> User Notion workflow and is not presented as a supported integration. The implementation is frozen as research evidence. Its exact endpoint, internal-file, legacy-schema, helper and failure boundaries are recorded in the [directory README](../experimental/ainote-return/README.md).
+The PoC demonstrated a direct AINOTE -> Notion -> AINOTE round trip, including image Return, through undocumented Desktop endpoints and internal data assumptions. PDF export was not part of that path. The direct route offers a more natural user experience, but the current public flow intentionally does not use it and does not present it as a supported integration.
+
+AI-no-Te will not adopt the route based on technical success alone. If AINOTE considers this use acceptable for an experimental or community integration, the project can implement it carefully. Otherwise, it will remain parked. This position does not claim that the undocumented routes are supported or endorsed. The implementation is frozen as research evidence, and its exact endpoint, internal-file, legacy-schema, helper and failure boundaries are recorded in the [directory README](../experimental/ainote-return/README.md).
 
 ## Safety model
 

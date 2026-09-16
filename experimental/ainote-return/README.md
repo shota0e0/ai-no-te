@@ -2,7 +2,9 @@
 
 ## Positioning
 
-This directory preserves the earlier image-bearing AINOTE Return proof of concept as research evidence. It demonstrated image return to a newly created note. However, it is not the supported AI-no-Te Return path or part of Public Core, and it does not use a public AINOTE OpenModel API.
+This directory preserves the earlier image-bearing AINOTE Return proof of concept as research evidence. The PoC completed a direct AINOTE -> Notion -> AINOTE round trip, including image return to a newly created note, without using PDF export. That direct route offers a more natural user experience. However, it is not the supported AI-no-Te Return path or part of Public Core, and it does not use a public AINOTE OpenModel API.
+
+The current public flow intentionally uses PDF export and does not invoke this route. AI-no-Te will not adopt the PoC as a supported path based on technical success alone. If AINOTE considers this use acceptable for an experimental or community integration, the project can implement it carefully. Otherwise, the route will remain parked. Nothing here claims that the undocumented behavior is supported or endorsed.
 
 The official Skill-to-Desktop OpenModel route is separate. AI-no-Te's official adapter is [`src/ainote/official-return.mjs`](../../src/ainote/official-return.mjs); it uses only the documented OpenModel note routes and remains offline and preview-only. Nothing in the normal CLI imports or invokes the files in this directory.
 

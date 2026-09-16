@@ -36,6 +36,10 @@ AINOTE
 
 This flow has been confirmed with real data through the User Notion review stage. Private notes, credentials, live records, and local evidence are not publication candidates.
 
+The public flow uses PDF export deliberately. This is not because a direct AINOTE -> Notion -> AINOTE loop was technically impossible. An earlier Experimental PoC completed that round trip without PDF export by relying on undocumented AINOTE Desktop behavior.
+
+The direct path offers a more natural user experience, but AI-no-Te will not adopt it as a supported path without knowing whether AINOTE considers that use acceptable. If it is acceptable for an experimental or community integration, the project can implement it carefully. Otherwise, the path will remain parked. The current public flow therefore favors published, officially documented routes and uses PDF export for input.
+
 The intended longer loop ends with an optional new note in AINOTE. Official text-note creation is confirmed. Official image Return is parked.
 
 ## Current status
