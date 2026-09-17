@@ -110,7 +110,7 @@ test("Original protection and explicit write boundary remain documented and impl
   assert.equal(resolveInvocationMode(["--execute"]), "--execute");
 });
 
-test("official adapter and normal CLI do not import or allow experimental transport", async () => {
+test("official adapter stays isolated and normal CLI uses only the public Desktop runtime", async () => {
   const [cli, official] = await Promise.all([
     readFile(new URL("../../../src/cli.mjs", import.meta.url), "utf8"),
     readFile(new URL("../../../src/ainote/official-return.mjs", import.meta.url), "utf8"),
@@ -119,5 +119,6 @@ test("official adapter and normal CLI do not import or allow experimental transp
   for (const blocked of ["/note/createMixtureNote", "/note/addMixtureImgFile", "/note/saveRichMixtureNote", "/note/getDetail", "/sync/pushOneNote"]) {
     assert.doesNotMatch(official, new RegExp(blocked.replaceAll("/", "\\/")));
   }
-  assert.match(cli, /Return command supports official-preview only/);
+  assert.match(cli, /official-preview/);
+  assert.match(cli, /desktopReturnCommand/);
 });

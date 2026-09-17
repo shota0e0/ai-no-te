@@ -2,9 +2,9 @@
 
 ## Positioning
 
-This directory preserves the earlier image-bearing AINOTE Return proof of concept as research evidence. The PoC completed a direct AINOTE -> Notion -> AINOTE round trip, including image return to a newly created note, without using PDF export. That direct route offers a more natural user experience. However, it is not the supported AI-no-Te Return path or part of Public Core, and it does not use a public AINOTE OpenModel API.
+This directory preserves the earlier image-bearing AINOTE Return proof of concept as research and compatibility evidence. The PoC completed a direct AINOTE -> Notion -> AINOTE round trip, including image return to a newly created note, without using PDF export. It does not use a public AINOTE OpenModel API.
 
-The current public flow intentionally uses PDF export and does not invoke this route. AI-no-Te will not adopt the PoC as a supported path based on technical success alone. If AINOTE considers this use acceptable for an experimental or community integration, the project can implement it carefully. Otherwise, the route will remain parked. Nothing here claims that the undocumented behavior is supported or endorsed.
+The user-facing Experimental Desktop Return is now [`src/ainote/desktop-return.mjs`](../../src/ainote/desktop-return.mjs). It reuses the confirmed endpoint sequence but accepts the current User schema, provides public CLI preview/execute commands, and avoids the legacy Notion state update in this PoC. Nothing here claims that the undocumented behavior is supported or endorsed.
 
 The official Skill-to-Desktop OpenModel route is separate. AI-no-Te's official adapter is [`src/ainote/official-return.mjs`](../../src/ainote/official-return.mjs); it uses only the documented OpenModel note routes and remains offline and preview-only. Nothing in the normal CLI imports or invokes the files in this directory.
 
@@ -27,7 +27,7 @@ The current User profile instead uses:
 - `Clean`
 - `Interpreted`
 
-These contracts are intentionally incompatible. There is no automatic migration or field-name fallback. Passing the current User schema to this PoC fails closed during schema validation. Use the current User fields only with the official offline adapter; do not adapt a live User record to this research transport without a separately reviewed migration design.
+These contracts are intentionally incompatible. There is no automatic migration or field-name fallback. Passing the current User schema to this PoC fails closed during schema validation. Use the current User fields with the public Experimental Desktop runtime or the official offline adapter; do not adapt a live User record to this legacy PoC.
 
 ## Undocumented endpoints
 
@@ -98,4 +98,4 @@ Experimental write, which requires separate informed authorization:
 ./experimental/ainote-return/invoke-ainote-clean-return-poc.ps1 --execute
 ```
 
-This documentation does not authorize execution. Prefer the documented OpenModel route whenever it can satisfy the use case.
+These commands operate the legacy PoC and are not the normal user entrypoint. See the [public Experimental Desktop Return guide](../../docs/experimental-ainote-return.md). Prefer the documented OpenModel route whenever it can satisfy the use case.

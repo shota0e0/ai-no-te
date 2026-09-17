@@ -91,6 +91,13 @@ const experimentalSource = await readFile(
 const experimentalReadmePath = "experimental/ainote-return/README.md";
 if (!publicFiles.includes(experimentalReadmePath)) fail("Experimental Return boundary README is missing from PUBLIC");
 const experimentalReadme = await readFile(path.join(root, experimentalReadmePath), "utf8");
+const desktopReturnPath = "src/ainote/desktop-return.mjs";
+const desktopReturnTestPath = "tests/desktop-return.test.mjs";
+for (const file of [desktopReturnPath, desktopReturnTestPath]) {
+  if (!publicFiles.includes(file)) fail(`Experimental Desktop Return public runtime missing: ${file}`);
+}
+const desktopReturnSource = await readFile(path.join(root, desktopReturnPath), "utf8");
+const experimentalGuide = await readFile(path.join(root, "docs/experimental-ainote-return.md"), "utf8");
 for (const removedMode of ["--interpreted-flow", "--v21-flow", "--reuse-check"]) {
   if (experimentalSource.includes(removedMode)) {
     fail(`approval-provisioning mode remains reachable: ${removedMode}`);
@@ -103,12 +110,23 @@ for (const route of ["/note/createMixtureNote", "/note/addMixtureImgFile", "/not
   if (!experimentalSource.includes(route) || !experimentalReadme.includes(`| \`${route}\``)) {
     fail(`Experimental Return endpoint disclosure missing: ${route}`);
   }
+  if (!desktopReturnSource.includes(route) || !experimentalGuide.includes(`| \`${route}\``)) {
+    fail(`public Experimental Desktop Return route missing or undisclosed: ${route}`);
+  }
 }
 for (const dependency of ["db.json", "dir.json", "note_relations.json", "page.bin", "change.json", "note.log", "T5/page data model"]) {
   if (!experimentalReadme.includes(dependency)) fail(`Experimental Return internal dependency disclosure missing: ${dependency}`);
 }
 for (const boundary of ["intentionally incompatible", "fails closed", "LOCAL_ONLY", "does not copy, vendor, download, or bundle", "Original is not overwritten", "There is no rollback"]) {
   if (!experimentalReadme.includes(boundary)) fail(`Experimental Return boundary missing: ${boundary}`);
+}
+for (const required of ["Review state", "Return target", "Original", "Clean", "Interpreted", "desktop-preview", "desktop-execute", "EXPLICIT_EXECUTE_REQUIRED", "installed AINOTE Skill", "automaticRetry: false"]) {
+  if (!desktopReturnSource.includes(required) && !experimentalGuide.includes(required)) {
+    fail(`Experimental Desktop Return current contract missing: ${required}`);
+  }
+}
+for (const prohibited of ["Return state", "Result SHA-256", "AINOTE return ID", "Returned at"]) {
+  if (desktopReturnSource.includes(prohibited)) fail(`legacy Return field leaked into public Desktop runtime: ${prohibited}`);
 }
 
 const readme = await readFile(path.join(root, "README.md"), "utf8");
@@ -125,7 +143,7 @@ if (packageMetadata.name !== "ai-no-te-public-alpha" || lockMetadata.name !== pa
 for (const requiredWarning of ["experimental", "version-specific", "unsupported", "outside the published official openmodel api"]) {
   if (!readme.toLowerCase().includes(requiredWarning)) fail(`README warning missing: ${requiredWarning}`);
 }
-for (const requiredWarning of ["実験的な調査用実装", "特定のバージョンに依存", "公式のサポート対象外", "公開された公式OpenModel APIではなく"]) {
+for (const requiredWarning of ["Experimental Desktop Return", "特定のバージョンに依存", "公式のサポート対象外", "公開された公式OpenModel APIではありません"]) {
   if (!readmeJa.includes(requiredWarning)) fail(`README.ja warning missing: ${requiredWarning}`);
 }
 if (!/\[日本語版\]\(README\.ja\.md\)/.test(readme)) {
@@ -142,7 +160,7 @@ if (!/\[Getting Startedガイド\]\(docs\/getting-started\.ja\.md\)/.test(readme
 }
 const gettingStarted = await readFile(path.join(root, "docs/getting-started.md"), "utf8");
 const gettingStartedJa = await readFile(path.join(root, "docs/getting-started.ja.md"), "utf8");
-for (const requiredFile of ["src/processing/poc.mjs", "src/processing/typed.mjs", "tests/processing.test.mjs", "tests/typed-processing.test.mjs", "docs/ai-processing.md", "prompts/clean-v1.txt", "prompts/interpreted-v1.txt", "prompts/interpreted-v2.txt", "prompts/ocr-v1.txt", "prompts/typed-clean-v1.txt", "prompts/typed-interpreted-v1.txt", "prompts/typed-interpreted-v2.txt"]) {
+for (const requiredFile of ["src/processing/poc.mjs", "src/processing/typed.mjs", "tests/processing.test.mjs", "tests/typed-processing.test.mjs", "docs/ai-processing.md", "prompts/clean-v1.txt", "prompts/interpreted-v1.txt", "prompts/interpreted-v2.txt", "prompts/ocr-v1.txt", "prompts/typed-clean-v1.txt", "prompts/typed-clean-v2.txt", "prompts/typed-interpreted-v1.txt", "prompts/typed-interpreted-v2.txt", "prompts/typed-interpreted-v3.txt"]) {
   if (!publicFiles.includes(requiredFile)) fail(`AI processing file missing from PUBLIC: ${requiredFile}`);
 }
 const processingGuide = await readFile(path.join(root, "docs/ai-processing.md"), "utf8");
@@ -229,13 +247,13 @@ for (const requiredText of [
   if (!gettingStartedJa.includes(requiredText)) fail(`Getting Started Japanese guidance missing: ${requiredText}`);
 }
 for (const [label, enText, jaText] of [
-  ["outside the published OpenModel API", "outside the published official OpenModel API", "公開された公式OpenModel APIではなく"],
+  ["outside the published OpenModel API", "outside the published official OpenModel API", "公開された公式OpenModel APIではありません"],
   ["no compatibility guarantee", "There is no compatibility guarantee", "互換性は保証されません"],
   ["explicit execution", "Execution must be requested explicitly", "実際に書き込むには、`--execute`を付ける必要があります"],
   ["Original preservation", "Original is not overwritten", "Originalは上書きしません"],
   ["independent project", "independent experimental project", "独立した実験プロジェクト"],
-  ["non-public behavior", "based on non-public AINOTE behavior", "公開されていないAINOTEの動作に依存している"],
-  ["update breakage", "may break after AINOTE updates", "AINOTEの更新後に動かなくなる可能性があります"],
+  ["non-public behavior", "uses undocumented AINOTE Desktop endpoints", "公開されていないAINOTE Desktopの通信先"],
+  ["update breakage", "may break after AINOTE updates", "AINOTEの更新後に動かなくなる可能性"],
 ]) {
   if (!readme.includes(enText) || !readmeJa.includes(jaText)) fail(`EN/JA parity missing: ${label}`);
 }

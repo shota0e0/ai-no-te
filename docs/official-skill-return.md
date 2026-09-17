@@ -4,6 +4,8 @@
 
 The official adapter is offline and preview-only. It accepts the current User fields `Review state`, `Return target`, `Original`, `Clean`, and `Interpreted`, then reuses the existing readiness evaluator. `Use Default` resolves through the configured default, initially Clean. It does not require the legacy Experimental Return schema.
 
+This adapter remains separate from the public Experimental Desktop Return in `src/ainote/desktop-return.mjs`. The official adapter uses only documented OpenModel routes; the Experimental runtime uses a distinct allowlist of undocumented Desktop routes for image Return. Neither classification changes the other.
+
 Only these documented OpenModel routes are allowed in a plan:
 
 - `POST /open-model-note/file/create` for a new Markdown note.

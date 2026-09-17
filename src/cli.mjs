@@ -25,6 +25,7 @@ import { pdfCommand } from "./pdf/input.mjs";
 import { processCommand } from "./processing/typed.mjs";
 import { processingNotionPreviewCommand } from "./notion/processing-preview.mjs";
 import { officialReturnPreviewCommand } from "./ainote/official-return.mjs";
+import { desktopReturnCommand } from "./ainote/desktop-return.mjs";
 
 function option(args, name, fallback) {
   const index = args.indexOf(name);
@@ -58,8 +59,10 @@ export async function main(args = process.argv.slice(2), dependencies = {}) {
   ));
   const command = args[0] ?? "demo";
   if (command === "return") {
-    if (args[1] !== "official-preview") throw new Error("Return command supports official-preview only.");
-    const result = await officialReturnPreviewCommand(args.slice(2));
+    const returnCommand = args[1];
+    const result = returnCommand === "official-preview"
+      ? await officialReturnPreviewCommand(args.slice(2))
+      : await desktopReturnCommand(returnCommand, args.slice(2), dependencies.desktopReturnDependencies);
     write(result);
     return result;
   }

@@ -2,7 +2,7 @@
 
 [English](README.md)
 
-AI-no-Teは、AINOTEの手書きノートをAIで整理し、Notionで確認して、将来はAINOTEへ戻すところまでをつなぐ独立プロジェクトです。
+AI-no-Teは、AINOTEの手書きノートをAIで整理し、Notionで確認して、必要な結果を新しいAINOTEノートとして戻すところまでをつなぐ独立プロジェクトです。
 
 現在のリポジトリは、一般ユーザー向けの導入ツールだけではなく、AINOTEのプロダクト・開発チーム、技術レビューを行う方、共同開発者が、目的と到達点、技術上の制約を確認できる公開記録として整理しています。
 
@@ -32,15 +32,17 @@ AINOTE
   -> 例外がある場合だけ人が確認
        -> Approved
        -> Needs Review
+  -> Experimental Desktop Return（明示的に実行）
+  -> 新しいAINOTEノート
 ```
 
 ここまでは、実際のAINOTE由来データとUser Notionを使って確認済みです。実データ、認証情報、Notionのレコード、検証用の非公開ファイルは公開対象に含めません。
 
 公開フローでPDF入力を使っているのは、AINOTEとNotionを直接つなぐ方法が技術的に実現できなかったからではありません。以前のExperimental PoCでは、PDFを書き出さず、公開されていないAINOTE Desktopの動作を使って、AINOTE → Notion → AINOTEの往復を確認しました。
 
-直接つなぐ方が操作は自然ですが、AI-no-Teの判断だけで公開機能として採用することはしません。実験・コミュニティ連携としてAINOTE側が許容する使い方であれば慎重に実装を進め、そうでなければ保留を続けます。現在の公開フローでは、公式に公開・案内された経路を優先し、入力にはPDF書き出しを使っています。
+直接つなぐ方が操作は自然です。community projectとして調査・共有を続けてよいとの説明を受け、今回はそのうちExperimental Desktop Returnを公開版に加えました。Desktopから直接入力する部分は別の作業として扱い、現在の公開入力では、公式に案内され、実機で確認できているPDF書き出しを引き続き使います。
 
-最終的には、必要な結果をAINOTEへ新しいノートとして戻すところまでを目指しています。公式経路でのテキストノート作成は確認済みです。画像を返す経路はいったん保留しています。
+公開版には、画像を含む新しいAINOTEノートを作るExperimental Desktop Returnを含めます。公式に公開されたOpenModelの画像経路は引き続き未確認です。Experimental経路はそれとは別で、公開されていないDesktopの動作を使い、明示的に実行した場合だけ動きます。
 
 ## 現在の状況
 
@@ -55,7 +57,7 @@ AINOTE
 | 例外がある場合だけ人が確認する運用 | 実環境で確認済み |
 | 公式経路でのAINOTEテキストノート作成・読戻し | 実環境で確認済み |
 | 公式経路でのAINOTE画像返却 | **保留** — 現在確認できる公開手段なし |
-| 実験的な画像返却 | Desktop内部の動作を使ったPoCでは確認済み。通常フローでは不使用 |
+| Experimental Desktop画像返却 | 公開CLIから利用可能。Desktop内部の動作を使って確認済み |
 
 ## 基本方針
 
@@ -63,7 +65,7 @@ AINOTE
 - CleanとInterpretedの役割を分けます。
 - 通常の処理は自動でApprovedにし、明らかな例外だけ人が確認します。
 - 公開する表示や記録に、認証情報、非公開の識別情報、実際のノート内容を含めません。
-- 技術的に動かせる内部経路より、公式に公開された方法を優先します。
+- 必要な機能を公式に公開された方法で実現できる場合は、その経路を優先します。Desktop内部の経路を使う機能にはExperimentalと明記します。
 
 ## Notionでの確認
 
@@ -120,15 +122,17 @@ AINOTEの公式Skillの資料と実機確認で、次の動作を確認してい
 
 Markdown画像の実機確認では、HTTPS、data URI、ローカルパス、`file://`の記法が文字列として保存されることを確認しました。ただし、AINOTEの画面ではいずれも画像として表示されませんでした。公開資料で確認できる画像挿入、添付、ファイル送信の経路も見つかっていません。このため、公式経路での画像返却はいったん保留しています。
 
-### 実験的な調査
+### Experimental Desktop Return
 
-`experimental/ainote-return/`では、公開されていないAINOTE Desktopの通信先と内部データの前提を使い、画像を含む返却PoCまで技術的に確認しました。現在の通常フローでは使わず、対応済みの連携機能としても扱いません。
+公開CLIの`return desktop-preview`と`return desktop-execute`から利用できます。現在のUser項目をそのまま読み、`Use Default -> Clean`を解決します。Approvedで状態に矛盾がなく、選択したPNGを確認できる場合だけ実行できます。返却先は必ず新しいノートで、Originalを更新・削除・上書きしません。
 
-この経路は公開された公式OpenModel経路ではなく、実験的な調査用実装です。特定のバージョンに依存し、公式のサポート対象外です。公開されていないAINOTEの動作に依存しているため、AINOTEの更新後に動かなくなる可能性があります。公開された公式OpenModel APIではなく、互換性は保証されません。実装は通常フローから分離し、調査記録として残しています。詳しい境界は[ExperimentalディレクトリのREADME](experimental/ainote-return/README.md)にまとめています。
+この機能は公開された公式OpenModel APIではありません。公開されていないAINOTE Desktopの通信先を使うため、特定のバージョンに依存し、公式のサポート対象外です。AINOTEの更新後に動かなくなる可能性があり、互換性は保証されません。必要な補助スクリプトはインストール済みAINOTE Skillから検出し、リポジトリや配布ZIPには同梱しません。
 
-### 画像返却を保留している理由
+従来の`experimental/ainote-return/`はPoCと互換性確認用の資料として残します。一般ユーザー向けruntimeは[src/ainote/desktop-return.mjs](src/ainote/desktop-return.mjs)です。AINOTEチームからcommunity projectとして調査・共有を続けてよいとの説明を受け、このExperimental経路を利用可能にしました。公認、提携、公式APIを示すものではありません。
 
-内部の仕組みを使って無理に画像を返すより、公式に公開・案内された経路を優先したいと考えています。AINOTE側で画像挿入や添付の公式経路が公開された場合は、Original／Clean／Interpretedの選択やNotionの確認方法を変えずに、通信部分だけを差し替えられる構成にしています。
+### 公式経路とExperimental経路
+
+画像を扱える公式経路はまだ確認できていないため、公式OpenModelでの画像返却は保留のままです。互換性上の制限を理解したユーザーはExperimental Desktop Returnを選べます。将来、公式の画像挿入・添付経路が公開された場合は、Original／Clean／Interpretedの選択やNotionの確認方法を変えずに通信部分を差し替えられます。
 
 テキストノートを作れることは大切な確認結果ですが、選択したClean／Interpreted画像を戻せないため、AI-no-Teの一連の流れが完成したとは扱いません。
 
@@ -139,8 +143,9 @@ Markdown画像の実機確認では、HTTPS、data URI、ローカルパス、`f
 - User／Development用Notion項目定義とoffline preview
 - 5条件だけを使う自動確認
 - 公式テキストノート作成のpreview adapter
+- 一般ユーザー向けExperimental Desktop Return runtimeとoffline preview
 - 架空データを使うデモと検証
-- 通常フローから分離したExperimental Return PoCと注意事項
+- 過去PoCと互換性確認用の資料
 
 公開されているNotion向けコマンドはプレビュー専用で、`--execute`を拒否します。User Notionの実際の流れは手元の非公開環境で確認済みですが、認証情報、送信用の手元のスクリプト、実レコード、実データは公開候補に含めません。
 
@@ -234,7 +239,7 @@ AI-no-Teは、AINOTE本体や端末での動作、保存データの完全性、
 - OCRと画像生成は人が操作をつなぐ方式で、結果は毎回同じとは限りません。
 - User Notionの流れは実環境で確認済みですが、公開Notion bridgeはプレビュー専用です。
 - Markdown画像が表示されず、公開された画像用経路も確認できないため、公式経路での画像返却は保留しています。
-- Experimental Returnは、公開されていない動作と特定バージョンに依存する調査用PoCです。
+- Experimental Desktop Returnは利用できますが、公開されていない動作と特定バージョンに依存し、公式サポートや互換性保証はありません。
 
 ## 独立性
 
@@ -244,8 +249,8 @@ AI-no-Teは独立した実験プロジェクトです。AINOTE、iFLYTEK、Notio
 
 - Originalを残す方針とUser向け6項目を維持する。
 - 通常の自動確認は、5つの例外だけを対象にする。
-- 画像を扱える公式経路が公開された場合は、保留中の通信部分を差し替える。
-- Experimental Returnを通常フローから分離し、特定バージョンに依存する調査記録として維持する。
+- 画像を扱える公式経路が公開された場合は、Experimental Desktop transportを差し替える。
+- Experimental Returnを明示実行・新規ノート作成に限定し、公式adapterと分けて維持する。
 - 実ノートや識別情報を公開せず、再現できる技術記録を増やす。
 
 ## ライセンス

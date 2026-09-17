@@ -2,7 +2,7 @@
 
 [English](getting-started.md)
 
-AI-no-Teでは、Originalを残したままCleanとInterpretedを作り、Notionで確認します。実データを使った流れは、User Notionと例外時の確認まで検証済みです。この公開ガイドで再現できるのは、手元での処理とプレビューです。認証情報、実レコード、送信用の手元のスクリプトは含めません。公式経路での画像返却はいったん保留しています。
+AI-no-Teでは、Originalを残したままCleanとInterpretedを作り、Notionで確認します。Approvedになった画像は、Experimental Desktop経路で新しいAINOTEノートとして返せます。認証情報や実レコードは含めません。公式OpenModelでの画像返却は引き続き未確認です。
 
 ## 1. 始める前に
 
@@ -115,22 +115,34 @@ Project sketchは`Use Default (Clean)`、Meeting memoは`Override → Interprete
 
 > Screenshot TODO: Original、Clean、Interpretedと、ApprovedまたはNeeds Reviewを確認できるNotionレコード。承認済みの画像が用意できた場合だけ、`04-notion-review.png`を使用します。
 
-## 6. AINOTEへ戻す処理の現在地
+## 6. Approvedの結果をAINOTEへ戻す
 
-通常の導入手順は、AINOTE PDF -> AI処理 -> User Notionでの確認までです。画像返却は通常のセットアップに含めません。
+公開CLIには、任意で使えるExperimental Desktop Returnが含まれています。公開されていないAINOTE Desktopの動作を使うため、AINOTEの更新後に動かなくなる可能性があり、公式AINOTE APIではありません。返却結果は新しいノートとして作り、Originalは上書きしません。
 
 公式Skill／OpenModelでは、新しいMarkdown／テキストノートの作成と読戻しを確認しています。実機確認では、HTTPS画像、検証用PNGのdata URI、ローカルパス、`file://` URIを保存できましたが、AINOTEの画面では画像として表示されませんでした。公開された画像挿入・添付・ファイル送信の経路も確認できないため、公式経路での画像返却は保留しています。
 
-Experimental AINOTE Returnは別の調査用PoCです。非公式でまだ実験段階にあり、特定のバージョンと公開されていない動作に依存しています。AINOTEの更新後に動かなくなる可能性があり、公式サポートの対象外です。Desktop内部の動作を使った画像返却は過去に確認しましたが、通常フローからは呼び出しません。
+現在のUserレコードを、`Title`、`Review state`、`Return target`、`Original`、`Clean`、`Interpreted`の6項目を持つローカルJSONとして用意します。選択されるClean／Interpretedのファイル項目には、DesktopがPNGを読めるように`localPath`も指定します。`Use Default`はCleanになります。Needs Review、状態の矛盾、ファイル欠落、不明なtargetは実行できません。
 
-- 外部の`ainote_api.py`が必要ですが、このリポジトリには同梱せず、自動取得や再配布も行いません。
-- modeを指定しない場合、PowerShellスクリプトは外部へ接続しない確認だけを行います。
-- 実際に返却するには`--execute`が必要です。また、自動確認またはNeeds Reviewの人による確認を経てApprovedになった対象が1件だけ存在している必要があります。
+- 先にAINOTE Skillをインストールしてください。`ainote_api.py`はインストール済みSkillから検出し、同梱・ダウンロード・再配布しません。
+- まず書込みなしで、選択結果と返却先を確認します。
+
+```console
+node src/cli.mjs return desktop-preview --record "user-return.json" --folder-id "<folder-id>" --folder-name "AI-no-Te"
+```
+
+- 内容を確認してから実行します。`desktop-execute`と`--execute`の両方が必要です。
+
+```console
+node src/cli.mjs return desktop-execute --record "user-return.json" --folder-id "<folder-id>" --folder-name "AI-no-Te" --execute
+```
+
+- 実際の返却には、既にApprovedになっているレコードが必要です。通常の自動確認でApprovedになった場合も、Needs Reviewを人が確認してApprovedへ変えた場合も対象にできます。
 - 選んだ結果はAINOTEへ新しいノートとして作成します。Originalは上書きしません。
+- 画像挿入、同期、読戻しは1回ずつ実行し、自動retryやrollbackは行いません。途中で失敗した場合や同じコマンドを繰り返した場合は、別のノートが残る可能性があります。
 - 実際に書き込む前に大切なデータをバックアップし、最初は重要でないノートで試してください。
 - 互換性は保証されません。確認している端末はAINOTE Air 2だけで、他の機種は未確認です。
 
-調査内容を確認する場合は、[公式経路の確認結果](official-skill-return.md)と[Experimental AINOTE Returnの設定と制限](experimental-ainote-return.md)を読んでください。別途承認した実験的な書込みを行う前には、大切なデータをバックアップし、最初は重要でないノートを使ってください。
+実行前に、[公式経路の確認結果](official-skill-return.md)と[Experimental Desktop Returnの設定と制限](experimental-ainote-return.md)を読んでください。`experimental/ainote-return/`の従来コードはPoCと互換性確認用の資料として残しており、一般ユーザー向けentrypointではありません。
 
 > Screenshot TODO: Originalが残り、新しいAINOTEノートが作成されたことを確認できる安全な画像。承認済みの画像が用意できた場合だけ、`05-ainote-return.png`を使用します。
 
@@ -188,7 +200,7 @@ new-pdf-job/
 
 Windowsで確認したAINOTE Air 2の書き出しサンプルは、寸法の異なる2ページで、手書きと図を含んでいました。Poppler 26.07.0、300 DPIで描画し、同じ環境での再実行では画像のハッシュ値が一致しました。別のバージョンやOSでも一致するという保証ではありません。検証した配布物・build・関連ライブラリを固定し、チェックサムを記録して、更新時は再確認してください。生成日時と保存先は実行ごとに変わります。
 
-PopplerはGPLライセンスの外部ツールです。再配布を検討する場合は、利用する配布物のライセンスを確認してください。MITライセンスの本リポジトリにPopplerの実行ファイルは含めません。Experimental AINOTE Returnは引き続き別の任意機能で、従来の注意事項も変わりません。
+PopplerはGPLライセンスの外部ツールです。再配布を検討する場合は、利用する配布物のライセンスを確認してください。MITライセンスの本リポジトリにPopplerの実行ファイルは含めません。Experimental Desktop Returnは任意機能で、別の互換性上の注意があります。
 
 ## PDF入力後にAIで処理する
 

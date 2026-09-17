@@ -9,7 +9,7 @@
   },
   "scripts": {
     "demo": "node src/cli.mjs",
-    "test": "node tests/public-core.test.mjs && node experimental/ainote-return/tests/ainote-clean-return-poc.test.mjs && node --test tests/pdf-input.test.mjs tests/processing.test.mjs tests/typed-processing.test.mjs tests/processing-notion-preview.test.mjs tests/official-return.test.mjs",
+    "test": "node tests/public-core.test.mjs && node experimental/ainote-return/tests/ainote-clean-return-poc.test.mjs && node --test tests/pdf-input.test.mjs tests/processing.test.mjs tests/typed-processing.test.mjs tests/processing-notion-preview.test.mjs tests/official-return.test.mjs tests/desktop-return.test.mjs",
     "validate:public": "node scripts/validate-public-candidate.mjs"
   },
   "license": "MIT"

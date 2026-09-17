@@ -63,7 +63,7 @@ node src/cli.mjs process clean --job "typed-job" --attempt 1
 node src/cli.mjs process interpreted --job "typed-job" --attempt 1
 ```
 
-Each verifies originals/OCR and creates an exclusive `clean-001` or `interpreted-001` directory with `request.json` and `prompt.txt`. Defaults: [typed Clean v1](../prompts/typed-clean-v1.txt), [typed Interpreted v2](../prompts/typed-interpreted-v2.txt). [Typed Interpreted v1](../prompts/typed-interpreted-v1.txt) remains available with `--version 1`. Historical image-only prompts and module tests remain for regression evidence, but the public CLI no longer dispatches that route.
+Each verifies originals/OCR and creates an exclusive `clean-001` or `interpreted-001` directory with `request.json` and `prompt.txt`. Defaults: [typed Clean v2](../prompts/typed-clean-v2.txt), [typed Interpreted v3](../prompts/typed-interpreted-v3.txt). These contracts omit known AI-no-Te processing/report labels while preserving genuine headings from the source note. They do not crop the page. Earlier prompt versions remain available through explicit `--version` values so existing artifact lineage remains reproducible. Historical image-only prompts and module tests remain for regression evidence, but the public CLI no longer dispatches that route.
 
 Effective prompts contain the versioned base (CRLF normalized to LF and trimmed), followed by normalized text and layout as labeled, untrusted JSON. Base and effective hashes are recorded. Image and text content are treated as data, not instructions. Do not silently add sample-specific instructions, edit saved prompts, or reuse a version for a different contract.
 

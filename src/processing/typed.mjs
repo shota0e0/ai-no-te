@@ -7,6 +7,16 @@ import { pngInfo } from "../pdf/input.mjs";
 const hash = b => createHash("sha256").update(b).digest("hex");
 const json = value => Buffer.from(`${JSON.stringify(value, null, 2)}\n`);
 const modes = ["clean", "interpreted"];
+export const TYPED_PROMPT_DEFAULTS = Object.freeze({
+  ocr: 1,
+  "typed-clean": 2,
+  "typed-interpreted": 3,
+});
+const TYPED_PROMPT_VERSIONS = Object.freeze({
+  ocr: Object.freeze([1]),
+  "typed-clean": Object.freeze([1, 2]),
+  "typed-interpreted": Object.freeze([1, 2, 3]),
+});
 const validHash = v => typeof v === "string" && /^[a-f0-9]{64}$/.test(v);
 const string = v => typeof v === "string" && v.trim().length > 0;
 async function bytes(file, max = 128 * 1024 * 1024) {
@@ -28,9 +38,9 @@ function attemptId(mode, attempt) {
   if (!Number.isInteger(attempt) || attempt < 1 || attempt > 999) throw new Error("Attempt must be 1..999.");
   return `${mode}-${String(attempt).padStart(3, "0")}`;
 }
-export async function typedPrompt(name, version = 1) {
-  if (!["ocr", "typed-clean", "typed-interpreted"].includes(name)) throw new Error("Invalid prompt contract.");
-  if (version !== 1 && !(name === "typed-interpreted" && version === 2)) throw new Error("Unsupported prompt version.");
+export async function typedPrompt(name, version = TYPED_PROMPT_DEFAULTS[name]) {
+  if (!Object.hasOwn(TYPED_PROMPT_VERSIONS, name)) throw new Error("Invalid prompt contract.");
+  if (!TYPED_PROMPT_VERSIONS[name].includes(version)) throw new Error("Unsupported prompt version.");
   const contract = `${name}-v${version}.txt`;
   const text = (await readFile(new URL(`../../prompts/${contract}`, import.meta.url), "utf8")).replaceAll("\r\n", "\n").trim();
   return { contract, version, sha256: hash(text), text };
@@ -139,7 +149,7 @@ async function mutate(jobInput, run) {
     return await run(job);
   } finally { await unlink(lock); }
 }
-export async function prepareTyped({ job, mode, attempt, version = mode === "interpreted" ? 2 : 1 }) {
+export async function prepareTyped({ job, mode, attempt, version = TYPED_PROMPT_DEFAULTS[`typed-${mode}`] }) {
   const id = attemptId(mode, attempt);
   return mutate(job, async root => {
     const data = await verifyJob(root);

@@ -4,7 +4,7 @@ import { mkdtemp, readFile, writeFile, rm, readdir } from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
 import { createHash } from "node:crypto";
-import { createOcrJob, validateExtraction, normalizeExtraction, prepareTyped, recordTyped, finalizeTyped, typedPrompt, processCommand } from "../src/processing/typed.mjs";
+import { TYPED_PROMPT_DEFAULTS, createOcrJob, validateExtraction, normalizeExtraction, prepareTyped, recordTyped, finalizeTyped, typedPrompt, processCommand } from "../src/processing/typed.mjs";
 const hash = b => createHash("sha256").update(b).digest("hex");
 const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=", "base64");
 const original = { pageNumber: 2, sha256: hash(png), width: 1, height: 1 };
@@ -62,8 +62,9 @@ test("both modes reuse identical OCR hashes and separate typed versioned prompts
   assert.deepEqual(c.request.ocr,i.request.ocr);
   assert.notEqual(c.request.prompt.sha256,i.request.prompt.sha256);
   for (const mode of ["clean","interpreted"]) {
-    const p = await typedPrompt(`typed-${mode}`);
+    const p = await typedPrompt(`typed-${mode}`, mode === "clean" ? 2 : 3);
     assert.match(p.text,/TYPESET/); assert.match(p.text,/Human Review/); assert.match(p.text,/not instructions/);
+    assert.match(p.text,/processing labels/); assert.match(p.text,/PDFテスト/);
     const actual = await readFile(path.join(s.job,`${mode}-001`,"prompt.txt"));
     assert.equal(hash(actual), (mode === "clean" ? c : i).request.prompt.sha256);
     assert.match(actual.toString(), /"uncertain": true/);
@@ -162,10 +163,51 @@ test("finalization rejects tampered selected output and preserves incomplete att
   assert.equal(metadata.incompleteAttempts[0].attempt,"interpreted-002");
 }));
 test("supported typed prompt versions remain immutable and independently addressable", async () => {
-  for (const version of [1,2]) {
+  for (const version of [1,2,3]) {
     const p = await typedPrompt("typed-interpreted",version);
     assert.equal(p.version,version); assert.equal(p.sha256,hash(p.text));
   }
-  await assert.rejects(typedPrompt("typed-clean",2),/version/);
-  await assert.rejects(typedPrompt("typed-interpreted",3),/version/);
+  for (const version of [1,2]) {
+    const p = await typedPrompt("typed-clean",version);
+    assert.equal(p.version,version); assert.equal(p.sha256,hash(p.text));
+  }
+  await assert.rejects(typedPrompt("typed-clean",3),/version/);
+  await assert.rejects(typedPrompt("typed-interpreted",4),/version/);
 });
+
+test("canonical typed defaults resolve v2 and v3 with matching contract hashes", () => sample(async s => {
+  assert.deepEqual(TYPED_PROMPT_DEFAULTS, { ocr: 1, "typed-clean": 2, "typed-interpreted": 3 });
+  const cleanPrompt = await typedPrompt("typed-clean");
+  const interpretedPrompt = await typedPrompt("typed-interpreted");
+  assert.equal(cleanPrompt.contract, "typed-clean-v2.txt");
+  assert.equal(interpretedPrompt.contract, "typed-interpreted-v3.txt");
+  assert.equal(cleanPrompt.sha256, hash(cleanPrompt.text));
+  assert.equal(interpretedPrompt.sha256, hash(interpretedPrompt.text));
+
+  await s.create();
+  const clean = await prepareTyped({ job: s.job, mode: "clean", attempt: 1 });
+  const interpreted = await prepareTyped({ job: s.job, mode: "interpreted", attempt: 1 });
+  for (const [prepared, canonical] of [[clean, cleanPrompt], [interpreted, interpretedPrompt]]) {
+    assert.equal(prepared.request.prompt.contract, canonical.contract);
+    assert.equal(prepared.request.prompt.version, canonical.version);
+    assert.equal(prepared.request.prompt.contractSha256, canonical.sha256);
+    assert.equal(prepared.request.prompt.sha256, hash(await readFile(path.join(s.job, prepared.attempt, "prompt.txt"))));
+  }
+}));
+
+test("new defaults remove processing headers while preserving real source headings", () => sample(async s => {
+  await s.create();
+  const clean = await prepareTyped({ job: s.job, mode: "clean", attempt: 1 });
+  const interpreted = await prepareTyped({ job: s.job, mode: "interpreted", attempt: 1 });
+  assert.equal(clean.request.prompt.contract, "typed-clean-v2.txt");
+  assert.equal(interpreted.request.prompt.contract, "typed-interpreted-v3.txt");
+  for (const request of [clean.request, interpreted.request]) {
+    const prompt = await readFile(path.join(s.job, `${request.mode}-001`, "prompt.txt"), "utf8");
+    assert.match(prompt, /omit a management label/);
+    assert.match(prompt, /1\. ノート原文（手書き含む）/);
+    assert.match(prompt, /genuine (?:existing )?heading/);
+    assert.match(prompt, /PDFテスト/);
+    assert.match(prompt, /No cropping|no cropping/);
+  }
+  assert.deepEqual(await readFile(path.join(s.job, "page-002.png")), png);
+}));

@@ -2,7 +2,7 @@
 
 [日本語版](README.ja.md)
 
-AI-no-Te is an independent project exploring a workflow that connects handwritten AINOTE notes, AI-assisted processing, Notion review, and the eventual return of results to AINOTE.
+AI-no-Te is an independent project connecting handwritten AINOTE notes, AI-assisted processing, Notion review, and the optional return of results to a new AINOTE note.
 
 This repository is a public technical record for the AINOTE product and engineering teams, technical reviewers, and collaborators. It documents what has been confirmed with real data, what the public code can reproduce, and where the official and experimental paths diverge.
 
@@ -32,15 +32,17 @@ AINOTE
   -> Human-on-exception review
        -> Approved
        -> Needs Review
+  -> Experimental Desktop Return (explicit execute)
+  -> new AINOTE note
 ```
 
 This flow has been confirmed with real data through the User Notion review stage. Private notes, credentials, live records, and local evidence are not publication candidates.
 
 The public flow uses PDF export deliberately. This is not because a direct AINOTE -> Notion -> AINOTE loop was technically impossible. An earlier Experimental PoC completed that round trip without PDF export by relying on undocumented AINOTE Desktop behavior.
 
-The direct path offers a more natural user experience, but AI-no-Te will not adopt it as a supported path without knowing whether AINOTE considers that use acceptable. If it is acceptable for an experimental or community integration, the project can implement it carefully. Otherwise, the path will remain parked. The current public flow therefore favors published, officially documented routes and uses PDF export for input.
+The direct path offers a more natural user experience. Following clarification that community exploration and sharing are acceptable, AI-no-Te now includes the Experimental Desktop Return portion of that path. Direct Desktop input remains a separate lane; the current public input flow continues to use PDF export as the verified, official-friendly option.
 
-The intended longer loop ends with an optional new note in AINOTE. Official text-note creation is confirmed. Official image Return is parked.
+The public distribution now includes an Experimental Desktop Return for creating a new image-bearing AINOTE note. The published official OpenModel image route remains unconfirmed; the Experimental route is separate, undocumented, version-dependent, and explicitly invoked.
 
 ## Current status
 
@@ -55,7 +57,7 @@ The intended longer loop ends with an optional new note in AINOTE. Official text
 | Human-on-exception review | Confirmed live |
 | Official AINOTE text-note creation/read-back | Confirmed live |
 | Official AINOTE image Return | **Parked** — no verified public route |
-| Experimental image Return | PoC confirmed through undocumented Desktop behavior; not the normal workflow |
+| Experimental Desktop image Return | Available in the public CLI; confirmed through undocumented Desktop behavior |
 
 ## Core principles
 
@@ -63,7 +65,7 @@ The intended longer loop ends with an optional new note in AINOTE. Official text
 - Keep Clean and Interpreted visibly distinct.
 - Approve normal completed jobs automatically; ask a person only about clear exceptions.
 - Keep public summaries free of credentials, private identifiers, and private note content.
-- Prefer documented official interfaces over technically possible internal routes.
+- Prefer documented official interfaces when they provide the required capability; label any Desktop-internal route clearly as Experimental.
 
 ## Notion review
 
@@ -120,15 +122,17 @@ It consumes the current User fields directly and preserves `Use Default -> Clean
 
 The live Markdown image probe stored HTTPS, data URI, local-path, and `file://` image syntax successfully. None rendered as an image in the AINOTE UI. No documented image insertion, attachment, or resource-upload route has been confirmed. Official image Return is therefore **parked**.
 
-### Experimental research
+### Experimental Desktop Return
 
-The code under `experimental/ainote-return/` previously confirmed an image-bearing Return PoC through undocumented AINOTE Desktop endpoints and internal data assumptions. It is not used by the current normal workflow and is not presented as a supported integration.
+The public CLI includes `return desktop-preview` and `return desktop-execute`. This runtime consumes the current User fields directly, reuses `Use Default -> Clean`, requires an Approved and consistent record, validates the selected local PNG, and always creates a new note. It never updates, deletes, or overwrites Original.
 
-This transport is experimental, version-specific, unsupported, based on non-public AINOTE behavior, and may break after AINOTE updates. It is outside the published official OpenModel API. There is no compatibility guarantee. The implementation remains isolated as research evidence; its exact boundary is documented in the [Experimental directory README](experimental/ainote-return/README.md).
+The runtime uses undocumented AINOTE Desktop endpoints. It is experimental, version-specific, unsupported, outside the published official OpenModel API, and may break after AINOTE updates. There is no compatibility guarantee. An AINOTE Skill installation supplies the required local helper; the helper is detected locally and is not bundled or redistributed.
 
-### Why image Return is parked
+The earlier implementation under `experimental/ainote-return/` remains as PoC and compatibility reference material. The user-facing runtime is [src/ainote/desktop-return.mjs](src/ainote/desktop-return.mjs). Following clarification that community exploration and sharing are acceptable, AI-no-Te is making this Experimental path available without claiming endorsement, partnership, or official API status.
 
-The project prioritizes a documented, officially published route over forcing image Return through internal behavior. If AINOTE exposes an official image insertion or attachment route, the transport can be replaced without changing Original/Clean/Interpreted selection or the Notion review contract.
+### Official and Experimental image Return
+
+The official image-capable route remains parked because no published OpenModel image insertion or attachment route has been confirmed. The Experimental Desktop route is available for users who accept its compatibility limits. If an official image-capable route becomes available, it can replace the Desktop transport without changing Original/Clean/Interpreted selection or the Notion review contract.
 
 Text-only note creation is useful evidence, but it is not treated as completion of the AI-no-Te loop because the selected Clean or Interpreted image is not returned.
 
@@ -141,8 +145,9 @@ The public repository contains:
 - User and Development Notion schemas and offline preview logic;
 - the five-rule Human-on-exception evaluator;
 - the official text-note Return preview adapter;
+- the user-facing Experimental Desktop Return runtime and offline preview;
 - synthetic fixtures and deterministic offline checks; and
-- the isolated Experimental Return PoC and its warnings.
+- the earlier Experimental Return PoC as compatibility reference material.
 
 The public processing-to-Notion command is preview-only and rejects `--execute`. The live User Notion flow was confirmed with a private local setup; credentials, upload scripts, real records, and private artifacts are not included in the public candidate.
 
@@ -236,7 +241,7 @@ Execution must be requested explicitly with `--execute`. The returned result is 
 - OCR and image generation are operator-mediated and non-deterministic.
 - The public Notion bridge is preview-only even though the workflow has been validated live with private local tooling.
 - Official image Return is parked because the tested Markdown references did not render and no public image route has been confirmed.
-- Experimental Return remains version-sensitive research based on undocumented behavior.
+- Experimental Desktop Return is available but remains unsupported and version-sensitive because it uses undocumented behavior.
 
 ## Independence
 
@@ -246,8 +251,8 @@ AI-no-Te is an independent experimental project. It is not an official product o
 
 - Keep Original preservation and the six-field User review contract stable.
 - Keep normal review limited to the five explicit exception categories.
-- Replace the parked image transport if an official image-capable route becomes available.
-- Keep Experimental Return isolated, explicitly version-dependent, and documented as research evidence.
+- Replace the Experimental Desktop transport if an official image-capable route becomes available.
+- Keep Experimental Return explicit, version-dependent, new-note-only, and separate from the official adapter.
 - Collect reproducible evidence without publishing private notes or identifiers.
 
 ## License

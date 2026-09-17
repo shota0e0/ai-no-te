@@ -2,7 +2,7 @@
 
 [日本語版](getting-started.ja.md)
 
-AI-no-Te preserves Original, prepares Clean and Interpreted results, and reviews them in Notion. The real workflow has been confirmed through User Notion and Human-on-exception review. This public guide covers the local processing and preview tools; private credentials, live records, and upload scripts are not included. Official image Return is parked.
+AI-no-Te preserves Original, prepares Clean and Interpreted results, reviews them in Notion, and can return an approved image as a new AINOTE note through an Experimental Desktop path. Private credentials and live records are not included. The official OpenModel image path remains unconfirmed.
 
 ## 1. Before You Start
 
@@ -115,22 +115,34 @@ After processing, AI-no-Te checks only five exceptions: suspicious OCR, missing 
 
 > Screenshot TODO: sanitized Notion review record showing Original, Clean, Interpreted, and its current Approved or Needs Review state. Use `04-notion-review.png` only after approved evidence is available.
 
-## 6. Return status — not part of normal setup
+## 6. Return an approved result to AINOTE
 
-Normal setup currently ends at AINOTE PDF -> AI processing -> User Notion review. Do not treat image Return as an installation step.
+The public CLI includes an optional Experimental Desktop Return. It uses undocumented AINOTE Desktop behavior, may stop working after an update, and is not an official AINOTE API. It creates a new note and does not overwrite Original.
 
 The documented official Skill/OpenModel route can create and read back a new Markdown/text note. A live probe stored HTTPS image Markdown, a synthetic PNG data URI, a local path, and a `file://` URI, but none rendered as an image in the AINOTE UI. No public image insertion, attachment, or resource-upload route has been confirmed, so official image Return is parked.
 
-Experimental AINOTE Return is separate research. It is unofficial, experimental, version-specific, unsupported, and based on non-public behavior that may change after an AINOTE update. It previously demonstrated image-bearing Return through undocumented Desktop behavior, but the normal workflow does not invoke it.
+Prepare a local JSON representation of the current User record with exactly these top-level fields: `Title`, `Review state`, `Return target`, `Original`, `Clean`, and `Interpreted`. The selected Clean/Interpreted file item also needs a `localPath` so Desktop can read the PNG. `Use Default` resolves to Clean. `Needs Review`, inconsistent records, missing artifacts, and unknown targets fail closed.
 
-- The required external `ainote_api.py` helper is not bundled, downloaded, or redistributed.
-- The wrapper performs an offline check when no mode is provided.
-- A return write requires the explicit `--execute` option and a unique, pre-existing Approved record. Approval may come from the normal auto-review path or from a person resolving a Needs Review exception.
+- Install the AINOTE Skill first. Its `ainote_api.py` helper is detected locally but is not bundled, downloaded, or redistributed.
+- Preview the exact selected artifact and destination without writing:
+
+```console
+node src/cli.mjs return desktop-preview --record "user-return.json" --folder-id "<folder-id>" --folder-name "AI-no-Te"
+```
+
+- Execute only after reviewing the preview. Both the execute subcommand and `--execute` are required:
+
+```console
+node src/cli.mjs return desktop-execute --record "user-return.json" --folder-id "<folder-id>" --folder-name "AI-no-Te" --execute
+```
+
+- A return write requires a pre-existing Approved record. Approval may come from the normal auto-review path or from a person resolving a Needs Review exception.
 - The selected result is created as a new AINOTE note. Original is not overwritten.
+- The runtime performs image insertion, sync, and read-back once. It does not retry or roll back automatically; a partial failure or repeated command may leave or create another note.
 - Back up important data before any experimental write and test first with a non-important note.
 - Compatibility is not guaranteed. The documented device check covers AINOTE Air 2 only; other models have not been verified.
 
-Before evaluating this research path, read the [official capability record](official-skill-return.md) and [Experimental AINOTE Return setup and limitations](experimental-ainote-return.md). Back up important AINOTE data and start with a non-important note before any separately authorized experimental write.
+Read the [official capability record](official-skill-return.md) and [Experimental Desktop Return setup and limitations](experimental-ainote-return.md) before executing. The older code under `experimental/ainote-return/` is retained as PoC and compatibility reference material; it is not the user-facing entrypoint.
 
 > Screenshot TODO: sanitized evidence of a newly created AINOTE note with Original still present. Use `05-ainote-return.png` only after approved evidence is available.
 
@@ -188,7 +200,7 @@ A failed job may retain `original.pdf` and some PNGs. It reports its directory a
 
 The Windows feasibility sample from AINOTE Air 2 had two differently sized pages, including handwriting and a drawing. Poppler 26.07.0 rendered it at 300 DPI. Identical output hashes were observed on repeat runs in that same environment; this is not a guarantee across versions or operating systems. Pin the tested distribution/build and supporting libraries, record their checksums, and revalidate when updating. Timestamps and job directories intentionally differ between runs.
 
-Poppler is an external GPL-licensed tool; review the chosen distribution's licenses before redistribution. No Poppler binary is included in this MIT-licensed repository. Experimental AINOTE Return remains a separate optional path with its existing warnings.
+Poppler is an external GPL-licensed tool; review the chosen distribution's licenses before redistribution. No Poppler binary is included in this MIT-licensed repository. Experimental Desktop Return remains optional and keeps its separate compatibility warnings.
 
 ## AI processing after PDF Input
 
