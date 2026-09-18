@@ -24,8 +24,7 @@ AIを使うために、人が考え方や書き方を変える必要はありま
 
 ```text
 AINOTE
-  -> PDFを手動で書き出す
-  -> PDF Input Adapter
+  -> Experimental Desktop Input（読取り専用）
   -> OCR / 文字の読取り
   -> Clean + Interpreted
   -> User Notion
@@ -38,9 +37,9 @@ AINOTE
 
 ここまでは、実際のAINOTE由来データとUser Notionを使って確認済みです。実データ、認証情報、Notionのレコード、検証用の非公開ファイルは公開対象に含めません。
 
-公開フローでPDF入力を使っているのは、AINOTEとNotionを直接つなぐ方法が技術的に実現できなかったからではありません。以前のExperimental PoCでは、PDFを書き出さず、公開されていないAINOTE Desktopの動作を使って、AINOTE → Notion → AINOTEの往復を確認しました。
+現在の主な入力方法はExperimental Desktop Inputです。元ノートを変更せずに選択したページの画像を読み取り、ハッシュ情報を含むローカル処理用packageを作ります。公開されていないDesktop内部の構造に依存するため、特定のバージョンでしか動かず、更新後に使えなくなる可能性があります。
 
-直接つなぐ方が操作は自然です。community projectとして調査・共有を続けてよいとの説明を受け、今回はそのうちExperimental Desktop Returnを公開版に加えました。Desktopから直接入力する部分は別の作業として扱い、現在の公開入力では、公式に案内され、実機で確認できているPDF書き出しを引き続き使います。
+PDF Inputも削除しません。公式に案内された書き出し方法を使いたい場合や、Desktop Inputが動かない場合のfallback、互換性確認、トラブル調査に使えます。どちらから始めても、その後は同じOCR、Clean、Interpreted、Notion、Returnの流れへ進みます。
 
 公開版には、画像を含む新しいAINOTEノートを作るExperimental Desktop Returnを含めます。公式に公開されたOpenModelの画像経路は引き続き未確認です。Experimental経路はそれとは別で、公開されていないDesktopの動作を使い、明示的に実行した場合だけ動きます。
 
@@ -48,6 +47,7 @@ AINOTE
 
 | 機能 | 状況 |
 |---|---|
+| Experimental Desktopからの直接入力 | 公開CLIから利用可能。読取り専用で、Desktopのバージョンに依存 |
 | AINOTEから書き出した実PDFの入力 | AINOTE Air 2で確認済み |
 | PDFページの確認と300 DPIのPNG化 | 確認済み |
 | OCR / 文字の読取り | 人が操作をつなぐ方式で確認済み |
@@ -81,7 +81,7 @@ AI-no-Te
 | 項目 | 内容 |
 |---|---|
 | Title | ノート名 |
-| Original | 元PDFと選択したページ画像 |
+| Original | Desktop入力のsource manifestまたは元PDFと、選択したページ画像 |
 | Clean | 配置変更を最小限にした活字化結果 |
 | Interpreted | 構成をより大きく整理した活字化結果 |
 | Return target | Use Default、Clean、Interpreted |
@@ -138,6 +138,7 @@ Markdown画像の実機確認では、HTTPS、data URI、ローカルパス、`f
 
 ## 公開リポジトリに含むもの
 
+- 一般ユーザー向けExperimental Desktop Input runtimeとページ／ハッシュ記録
 - PDF Input Adapterとハッシュ記録
 - 人が操作をつなぐOCR／Clean／Interpreted処理
 - User／Development用Notion項目定義とoffline preview
@@ -184,6 +185,8 @@ npm run validate:public
 実行時に使う外部npmパッケージはありません。PDF入力には、別途Popplerの`pdfinfo`と`pdftoppm`が必要です。Popplerは同梱せず、自動インストールも行いません。
 
 ## PDF入力
+
+PDF Inputは、Experimental Desktop Inputを利用できない場合や互換性を確認するときのfallbackです。主経路の手順は[Experimental Desktop Input](docs/experimental-desktop-input.md)を参照してください。
 
 AINOTEからPDFを手動で書き出し、内容を確認してからページを選びます。
 

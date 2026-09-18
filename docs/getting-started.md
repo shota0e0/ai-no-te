@@ -8,10 +8,11 @@ AI-no-Te preserves Original, prepares Clean and Interpreted results, reviews the
 
 - AI-no-Te is an independent Public Alpha, not an official AINOTE product.
 - You can try Public Core with synthetic notes and no external write.
+- Experimental Desktop Input is the preferred input route; it is read-only but depends on undocumented Desktop structures.
 - Experimental AINOTE Return is unofficial, unsupported, version-specific, and based on non-public AINOTE behavior.
 - Back up important AINOTE data before using Experimental AINOTE Return. Start with a non-important note.
 
-Public Core and Experimental AINOTE Return have different safety boundaries. Completing the offline preview does not configure or run the experimental return path.
+Experimental Desktop Input, Public Core, and Experimental AINOTE Return have different safety boundaries. Completing an input or offline preview does not configure or run the experimental return path.
 
 ## 2. Install
 
@@ -43,7 +44,21 @@ cp config/public-alpha.example.json config/public-alpha.local.json
 
 Replace placeholders only in the local copy. Do not store credentials in the file.
 
-## 3. Try the Offline Preview
+## 3. Import from AINOTE Desktop
+
+Experimental Desktop Input is the preferred user route. It reads Desktop-internal note/page resources without modifying the source note. It is undocumented, version-dependent, and may stop working after an AINOTE update.
+
+```console
+node src/cli.mjs input desktop-list
+node src/cli.mjs input desktop-preview --note note-001 --pages all --output "new-desktop-input-job"
+node src/cli.mjs input desktop-import --note note-001 --pages 1 --output "new-desktop-input-job"
+```
+
+`desktop-list` and `desktop-preview` create nothing. `desktop-import` creates only the new local output directory, preserves the exact source-resource hashes, and reports AINOTE writes and source mutations as zero. Duplicate titles require the displayed alias. Missing or ambiguous page/resource relations fail closed.
+
+Continue with `process ocr` using the selected `page-NNN.png` or `page-NNN.jpeg`. See [Experimental Desktop Input](experimental-desktop-input.md) for dependencies and failure handling. If this route is unavailable, use the PDF Input fallback later in this guide.
+
+## 4. Try the Offline Preview
 
 The synthetic preview below is independent of PDF Input. It does not consume rendered PDF pages.
 
@@ -84,7 +99,7 @@ Operation:
 
 > Screenshot TODO: offline preview terminal output. Use `01-offline-preview.png` after an approved, sanitized capture is available.
 
-## 4. Choose What to Send to Notion
+## 5. Choose What to Send to Notion
 
 The CLI options determine what the preview shows:
 
@@ -107,7 +122,7 @@ The preview will show Project sketch as `Use Default (Clean)`, Meeting memo as `
 
 > Screenshot TODO: per-note Interpreted override. Use `03-return-mode.png` after an approved, sanitized capture is available.
 
-## 5. Review in Notion
+## 6. Review in Notion
 
 Notion execution is optional and is not needed for the offline walkthrough above. A processed User record contains the Original, Clean, and Interpreted assets. Pending Review is temporary while processing or evaluation is incomplete.
 
@@ -115,7 +130,7 @@ After processing, AI-no-Te checks only five exceptions: suspicious OCR, missing 
 
 > Screenshot TODO: sanitized Notion review record showing Original, Clean, Interpreted, and its current Approved or Needs Review state. Use `04-notion-review.png` only after approved evidence is available.
 
-## 6. Return an approved result to AINOTE
+## 7. Return an approved result to AINOTE
 
 The public CLI includes an optional Experimental Desktop Return. It uses undocumented AINOTE Desktop behavior, may stop working after an update, and is not an official AINOTE API. It creates a new note and does not overwrite Original.
 
@@ -147,6 +162,8 @@ Read the [official capability record](official-skill-return.md) and [Experimenta
 > Screenshot TODO: sanitized evidence of a newly created AINOTE note with Original still present. Use `05-ainote-return.png` only after approved evidence is available.
 
 ## PDF Input
+
+PDF Input is the official-friendly verified fallback for compatibility and troubleshooting. It is not the preferred general-user route.
 
 PDF Input is local-only. It neither calls AINOTE/Notion nor generates Clean or Interpreted results. Manually export a PDF from AINOTE with the handwritten visual content included; inspect the exported pages before processing. Support is scoped to this AINOTE export workflow, not guaranteed support for arbitrary PDFs.
 

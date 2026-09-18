@@ -98,6 +98,20 @@ for (const file of [desktopReturnPath, desktopReturnTestPath]) {
 }
 const desktopReturnSource = await readFile(path.join(root, desktopReturnPath), "utf8");
 const experimentalGuide = await readFile(path.join(root, "docs/experimental-ainote-return.md"), "utf8");
+const desktopInputPath = "src/ainote/desktop-input.mjs";
+const desktopInputTestPath = "tests/desktop-input.test.mjs";
+const desktopInputGuidePath = "docs/experimental-desktop-input.md";
+for (const file of [desktopInputPath, desktopInputTestPath, desktopInputGuidePath]) {
+  if (!publicFiles.includes(file)) fail(`Experimental Desktop Input public file missing: ${file}`);
+}
+const desktopInputSource = await readFile(path.join(root, desktopInputPath), "utf8");
+const desktopInputGuide = await readFile(path.join(root, desktopInputGuidePath), "utf8");
+for (const required of ["desktop-list", "desktop-preview", "desktop-import", "db.json", "dir.json", "/note/getDetail", "sourceMutation:0", "ainoteWrites:0", "composeHandwritingLayers"]) {
+  if (!desktopInputSource.includes(required) && !desktopInputGuide.includes(required)) fail(`Experimental Desktop Input contract missing: ${required}`);
+}
+for (const required of ["REQUIRED", "OPTIONAL", "NOT_USED", "PDF Input remains", "version-specific", "never bundled"]) {
+  if (!desktopInputGuide.includes(required)) fail(`Experimental Desktop Input boundary missing: ${required}`);
+}
 for (const removedMode of ["--interpreted-flow", "--v21-flow", "--reuse-check"]) {
   if (experimentalSource.includes(removedMode)) {
     fail(`approval-provisioning mode remains reachable: ${removedMode}`);

@@ -8,10 +8,11 @@ AI-no-Teでは、Originalを残したままCleanとInterpretedを作り、Notion
 
 - AI-no-Teは、独立して開発している非公式のPublic Alphaです。
 - 通常の機能は、用意されたサンプルノートだけを使い、外部へ書き込まずに試せます。
+- 主な入力方法はExperimental Desktop Inputです。読取り専用ですが、公開されていないDesktop内部構造に依存します。
 - Experimental AINOTE Returnは非公式・実験段階で、特定のバージョンと公開されていないAINOTEの動作に依存しています。公式サポートの対象外です。
 - Experimental AINOTE Returnを使う前に、大切なAINOTEデータをバックアップしてください。最初は重要でないノートで試してください。
 
-通常の機能とExperimental AINOTE Returnでは、安全に使うための条件が異なります。offline previewを試しただけで、Experimental AINOTE Returnが設定されたり実行されたりすることはありません。
+Experimental Desktop Input、通常の機能、Experimental AINOTE Returnでは、安全に使うための条件が異なります。入力やoffline previewを試しただけで、Experimental AINOTE Returnが設定されたり実行されたりすることはありません。
 
 ## 2. インストール
 
@@ -43,7 +44,21 @@ cp config/public-alpha.example.json config/public-alpha.local.json
 
 仮の値はコピー先だけで変更してください。認証情報は設定ファイルに保存しないでください。
 
-## 3. Offline Previewを試す
+## 3. AINOTE Desktopから取り込む
+
+一般ユーザー向けの主経路はExperimental Desktop Inputです。元ノートを変更せず、Desktop内部のnote/page resourceを読み取ります。公開されていない構造に依存するため、特定のバージョンでしか動かず、AINOTEの更新後に使えなくなる可能性があります。
+
+```console
+node src/cli.mjs input desktop-list
+node src/cli.mjs input desktop-preview --note note-001 --pages all --output "new-desktop-input-job"
+node src/cli.mjs input desktop-import --note note-001 --pages 1 --output "new-desktop-input-job"
+```
+
+`desktop-list`と`desktop-preview`はファイルを作りません。`desktop-import`が作るのは新しいローカル保存先だけです。元resourceのハッシュを記録し、AINOTEへの書込みと元ノートの変更は0です。同名ノートが複数ある場合は、一覧に出たaliasを使います。page/resourceの対応が不明な場合は、別のノートやページを推測せず停止します。
+
+取り込んだ`page-NNN.png`または`page-NNN.jpeg`を`process ocr`へ渡します。依存関係と失敗時の扱いは[Experimental Desktop Input](experimental-desktop-input.md)を参照してください。利用できない場合は、このガイド後半のPDF Inputをfallbackとして使えます。
+
+## 4. Offline Previewを試す
 
 以下のサンプルpreviewはPDF入力とは独立しています。PNG化したPDFページを読み込むものではありません。
 
@@ -84,7 +99,7 @@ Operation:
 
 > Screenshot TODO: offline previewのターミナル画面。承認済みの安全な画像を用意できたら、`01-offline-preview.png`を使用します。
 
-## 4. Notionへ送る内容を選ぶ
+## 5. Notionへ送る内容を選ぶ
 
 CLIオプションを使うと、previewに表示する内容を変更できます。
 
@@ -107,7 +122,7 @@ Project sketchは`Use Default (Clean)`、Meeting memoは`Override → Interprete
 
 > Screenshot TODO: ノートごとのInterpreted override。承認済みの安全な画像を用意できたら、`03-return-mode.png`を使用します。
 
-## 5. Notionで確認する
+## 6. Notionで確認する
 
 ここまでのoffline手順では、Notionへの書き込みは必要ありません。処理済みのUserレコードにはOriginal、Clean、Interpretedが入り、処理中または判定前だけPending Reviewになります。
 
@@ -115,7 +130,7 @@ Project sketchは`Use Default (Clean)`、Meeting memoは`Override → Interprete
 
 > Screenshot TODO: Original、Clean、Interpretedと、ApprovedまたはNeeds Reviewを確認できるNotionレコード。承認済みの画像が用意できた場合だけ、`04-notion-review.png`を使用します。
 
-## 6. Approvedの結果をAINOTEへ戻す
+## 7. Approvedの結果をAINOTEへ戻す
 
 公開CLIには、任意で使えるExperimental Desktop Returnが含まれています。公開されていないAINOTE Desktopの動作を使うため、AINOTEの更新後に動かなくなる可能性があり、公式AINOTE APIではありません。返却結果は新しいノートとして作り、Originalは上書きしません。
 
@@ -147,6 +162,8 @@ node src/cli.mjs return desktop-execute --record "user-return.json" --folder-id 
 > Screenshot TODO: Originalが残り、新しいAINOTEノートが作成されたことを確認できる安全な画像。承認済みの画像が用意できた場合だけ、`05-ainote-return.png`を使用します。
 
 ## PDF Input
+
+PDF Inputは、互換性確認やトラブル調査に使える、公式の書き出し方法を優先したfallbackです。一般ユーザー向けの主経路ではありません。
 
 PDF入力は手元のファイルだけを扱います。AINOTEやNotionには接続せず、Clean／Interpretedも生成しません。AINOTEで手書きの見た目を含むPDFを書き出し、処理前にページを確認してください。対象はAINOTEのPDF書き出しです。任意のPDFがすべて使えるとは保証しません。
 

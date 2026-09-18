@@ -2,9 +2,9 @@
 
 ## Meaning and boundaries
 
-Original PDF -> Original page PNG -> OCR / text extraction -> layout/object record -> typed Clean and typed Interpreted.
+Original source (Desktop manifest or PDF) -> Original page image -> OCR / text extraction -> layout/object record -> typed Clean and typed Interpreted.
 
-OCR is mandatory. Both modes reuse the same extraction. Clean replaces handwritten characters with typed text while preserving meaning, drawings and broad layout; it is not merely neater handwriting. Interpreted may reorganize content more strongly without inventing facts. The current Interpreted contract keeps all words and changes hierarchy/placement rather than summarizing. Original PDF and Original page PNG are never overwritten. OCR text is a derivative, not Original.
+OCR is mandatory. Both modes reuse the same extraction. Clean replaces handwritten characters with typed text while preserving meaning, drawings and broad layout; it is not merely neater handwriting. Interpreted may reorganize content more strongly without inventing facts. The current Interpreted contract keeps all words and changes hierarchy/placement rather than summarizing. The Original source manifest/PDF and Original page image are never overwritten. OCR text is a derivative, not Original.
 
 ## Provider decision and reproduction
 
@@ -29,7 +29,7 @@ References: [Windows recognizer languages](https://learn.microsoft.com/en-us/uwp
 
 ## 1. Extract and import
 
-Keep the selected page with `original.pdf` and complete PDF Input `metadata.json`. Ask the image-reading assistant to inspect that exact page using [OCR v1](../prompts/ocr-v1.txt), supplying the page number and hash from PDF Input. Save its JSON response privately without correcting its words. Record ambiguous readings with `uncertain: true`; use `unknown` for confidence/bbox not returned by the provider. Rough verbal positions are observations, not measurements.
+Keep the selected page with the complete Desktop Input or PDF Input `metadata.json`. Ask the image-reading assistant to inspect that exact page using [OCR v1](../prompts/ocr-v1.txt), supplying the page number and hash from the input package. Save its JSON response privately without correcting its words. Record ambiguous readings with `uncertain: true`; use `unknown` for confidence/bbox not returned by the provider. Rough verbal positions are observations, not measurements.
 
 The schema example below is illustrative, not a real OCR result. Replace placeholders and blocks with the actual response. IDs must be unique. Types are `text`, `drawing`, `arrow`, `unknown`; non-text blocks have empty text and describe visible shapes rather than assumed meaning. Numeric bbox, when actually supplied, is [x,y,width,height] in source pixels. Numeric confidence must be provider-supplied in 0..1, never estimated.
 
@@ -51,10 +51,10 @@ The schema example below is illustrative, not a real OCR result. Replace placeho
 ```
 
 ```console
-node src/cli.mjs process ocr --input "pdf-job/page-002.png" --extraction "extraction.json" --output "typed-job"
+node src/cli.mjs process ocr --input "desktop-input-job/page-001.png" --extraction "extraction.json" --output "typed-job"
 ```
 
-This command imports OCR output; it does not run OCR. It validates the schema and PDF/page lineage before creating a new job. The parent directory must exist; `--output` is required and must not already exist. Raw bytes are preserved exactly in `ocr-raw.json`. `ocr-normalized.json` changes only whitespace and newlines, without spelling repair, added words, or completion. Uncertainty remains; unavailable confidence also sets `needsReview: true`. `layout.json` separately retains types, positions, and supplied boxes. No segmentation or cropping is performed.
+This command imports OCR output; it does not run OCR. It validates the schema and Desktop/PDF source-page lineage before creating a new job. The parent directory must exist; `--output` is required and must not already exist. Raw bytes are preserved exactly in `ocr-raw.json`. `ocr-normalized.json` changes only whitespace and newlines, without spelling repair, added words, or completion. Uncertainty remains; unavailable confidence also sets `needsReview: true`. `layout.json` separately retains types, positions, and supplied boxes. No segmentation or cropping is performed.
 
 ## 2. Prepare both modes
 
@@ -92,8 +92,8 @@ This verifies hashes and copies selected results to the job root. It neither app
 
 ```text
 typed-job/
-  original.pdf
-  page-002.png
+  original-source.json  # or original.pdf for PDF fallback
+  page-001.png          # selected Desktop/PDF page image
   ocr-raw.json
   ocr-normalized.json
   layout.json
@@ -107,7 +107,7 @@ typed-job/
   processing-metadata.json
 ```
 
-Schema 2 metadata links the Original hashes and page number; OCR provider, model, time, prompt, and raw/normalized/layout hashes; both image-prompt versions and hashes; returned PNG hashes and dimensions; attempt evidence; local recording time; failed or incomplete attempts; and pending visual review. Source paths remain in private `ocr-job.json` for rechecking. Keep the upstream PDF job until finalization. The recording time is not presented as the provider's generation time.
+Schema 2 metadata links the Original source kind/hash and page number; OCR provider, model, time, prompt, and raw/normalized/layout hashes; both image-prompt versions and hashes; returned PNG hashes and dimensions; attempt evidence; local recording time; failed or incomplete attempts; and pending visual review. Source paths remain in private `ocr-job.json` for rechecking. Keep the upstream Desktop/PDF input job until finalization. The recording time is not presented as the provider's generation time.
 
 Existing jobs, attempts, claims, outputs and final metadata are never overwritten. Mutations use an exclusive job lock. After interruption preserve and inspect the partial job; do not delete claims to force retries. Start a new job if a lock/finalization claim remains, or a new attempt for a recorded failure. Failed finalization may leave root images and `finalization-failure.json`; without successful final metadata it is incomplete. Finalized jobs are closed; further work uses a new job. Real inputs, OCR text and images are private artifacts, excluded from the public candidate.
 
@@ -131,8 +131,8 @@ The preview prepares one record per selected page. The following detailed mappin
 
 | Local input | Planned field / page content | Meaning |
 |---|---|---|
-| `original.pdf` + `page-NNN.png` | `Original` files field | Preserved source PDF and selected rendered page |
-| PDF SHA-256 | `Original SHA-256` | PDF identity; page hash is retained separately in provenance |
+| `original-source.json` or `original.pdf` + `page-NNN.*` | `Original` files field | Preserved Desktop manifest/PDF and selected page image |
+| Source SHA-256 | `Original SHA-256` | Desktop manifest or PDF identity; page hash is retained separately in provenance |
 | `clean.png` + its hash | `Clean`, `Clean SHA-256` | Typed text with minimal restructuring |
 | `interpreted.png` + its hash | `Interpreted`, `Interpreted SHA-256` | Typed text with stronger restructuring |
 | `ocr-raw.json`, `ocr-normalized.json`, `layout.json` | Planned attachments in an `OCR / Layout` page-body section | Raw extraction, reusable text and visual regions; no new database properties required by this plan |

@@ -26,6 +26,7 @@ import { processCommand } from "./processing/typed.mjs";
 import { processingNotionPreviewCommand } from "./notion/processing-preview.mjs";
 import { officialReturnPreviewCommand } from "./ainote/official-return.mjs";
 import { desktopReturnCommand } from "./ainote/desktop-return.mjs";
+import { desktopInputCommand } from "./ainote/desktop-input.mjs";
 
 function option(args, name, fallback) {
   const index = args.indexOf(name);
@@ -58,6 +59,11 @@ export async function main(args = process.argv.slice(2), dependencies = {}) {
     typeof value === "string" ? value : `${JSON.stringify(value)}\n`,
   ));
   const command = args[0] ?? "demo";
+  if (command === "input") {
+    const result = await desktopInputCommand(args[1], args.slice(2), dependencies.desktopInputDependencies);
+    write(result);
+    return result;
+  }
   if (command === "return") {
     const returnCommand = args[1];
     const result = returnCommand === "official-preview"

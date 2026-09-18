@@ -3,7 +3,7 @@
   "profile": "user",
   "properties": [
     { "key": "title", "name": "Title", "type": "title", "required": true, "meaning": "Name of the note being reviewed" },
-    { "key": "originalFile", "name": "Original", "type": "files", "required": true, "meaning": "Unchanged exported PDF and selected Original page PNG" },
+    { "key": "originalFile", "name": "Original", "type": "files", "required": true, "meaning": "Unchanged Desktop source manifest or exported PDF, plus the selected Original page image" },
     { "key": "cleanFile", "name": "Clean", "type": "files", "required": true, "meaning": "Typed text with minimal rearrangement" },
     { "key": "interpretedFile", "name": "Interpreted", "type": "files", "required": true, "meaning": "Typed text with stronger restructuring" },
     { "key": "reviewState", "name": "Review state", "type": "select", "required": true, "options": ["Pending Review", "Approved", "Needs Review"], "default": "Pending Review", "meaning": "Temporary, auto-approved, or human-on-exception review state" },

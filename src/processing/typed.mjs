@@ -19,6 +19,23 @@ const TYPED_PROMPT_VERSIONS = Object.freeze({
 });
 const validHash = v => typeof v === "string" && /^[a-f0-9]{64}$/.test(v);
 const string = v => typeof v === "string" && v.trim().length > 0;
+function sourceImageInfo(data, mimeType) {
+  if (mimeType === "image/png") return pngInfo(data);
+  if (mimeType !== "image/jpeg" || data[0] !== 0xff || data[1] !== 0xd8) throw new Error("Original page image is invalid.");
+  let offset = 2;
+  while (offset + 9 < data.length) {
+    if (data[offset] !== 0xff) { offset += 1; continue; }
+    const marker = data[offset + 1], length = data.readUInt16BE(offset + 2);
+    if ([0xc0,0xc1,0xc2,0xc3,0xc5,0xc6,0xc7,0xc9,0xca,0xcb,0xcd,0xce,0xcf].includes(marker)) {
+      const height = data.readUInt16BE(offset + 5), width = data.readUInt16BE(offset + 7);
+      if (width > 0 && height > 0 && width * height <= 100_000_000) return { height, width };
+      break;
+    }
+    if (!length || length < 2) break;
+    offset += 2 + length;
+  }
+  throw new Error("Original JPEG dimensions are unavailable.");
+}
 async function bytes(file, max = 128 * 1024 * 1024) {
   const s = await lstat(file).catch(() => null);
   if (!s?.isFile() || s.isSymbolicLink() || s.size > max) throw new Error("Missing, unsafe or oversized processing file.");
@@ -81,8 +98,10 @@ function layoutOf(raw) {
 export async function createOcrJob({ input, extraction, output }) {
   if (![input, extraction, output].every(string)) throw new Error("OCR requires --input, --extraction and a new --output directory.");
   const source = await inspectOriginal(input);
-  const original = { pdfFilename: "original.pdf", pdfSha256: source.lineage.source.sha256,
-    pageFilename: source.page.filename, pageNumber: source.page.pageNumber, ...source.pageInfo };
+  const original = { sourceKind: source.sourceKind, sourceFilename: source.sourceFilename, sourceSha256: source.sourceSha256,
+    pageFilename: source.page.filename, pageMimeType: source.page.mimeType ?? (source.page.filename.toLowerCase().endsWith(".png") ? "image/png" : "image/jpeg"),
+    pageNumber: source.page.pageNumber, ...source.pageInfo,
+    ...(source.sourceKind === "pdf" ? { pdfFilename: "original.pdf", pdfSha256: source.sourceSha256 } : {}) };
   const rawBytes = await bytes(path.resolve(extraction), 4 * 1024 * 1024);
   const raw = validateExtraction(JSON.parse(rawBytes.toString()), original);
   const normalized = json(normalizeExtraction(raw));
@@ -91,10 +110,11 @@ export async function createOcrJob({ input, extraction, output }) {
   const job = path.resolve(output);
   await mkdir(job, { mode: 0o700 }); // Exclusive creation, never recursively adopt an existing directory.
   try {
-    for (const [name, data] of [["original.pdf", source.pdfBytes], [original.pageFilename, source.pageBytes],
+    for (const [name, data] of [[original.sourceFilename, source.sourceBytes], [original.pageFilename, source.pageBytes],
       ["ocr-raw.json", rawBytes], ["ocr-normalized.json", normalized], ["layout.json", layout], ["ocr-prompt.txt", prompt.text]]) await put(path.join(job, name), data);
     const request = { schemaVersion: 2, createdAt: new Date().toISOString(), original,
-      sourcePaths: { originalPdf: source.originalPdf, originalPage: source.originalPage },
+      sourcePaths: { originalSource: source.originalSource, originalPage: source.originalPage,
+        ...(source.originalPdf ? { originalPdf: source.originalPdf } : {}) },
       ocr: { engine: raw.engine, provider: raw.provider, model: raw.model, modelVersion: raw.modelVersion, timestamp: raw.timestamp,
         rawSha256: hash(rawBytes), normalizedSha256: hash(normalized), layoutSha256: hash(layout),
         prompt: { contract: prompt.contract, version: prompt.version, sha256: prompt.sha256 },
@@ -113,13 +133,22 @@ async function verifyJob(job) {
   if (await lstat(path.join(job, "preparation-failure.json")).catch(() => null)) throw new Error("OCR preparation failed; use a new job.");
   const r = await readJson(path.join(job, "ocr-job.json"));
   const o = r.original;
-  if (r.schemaVersion !== 2 || o?.pdfFilename !== "original.pdf" || !Number.isInteger(o.pageNumber) || o.pageNumber < 1 || o.pageNumber > 500
-    || o.pageFilename !== `page-${String(o.pageNumber).padStart(3, "0")}.png` || !validHash(o.sha256) || !validHash(o.pdfSha256)) throw new Error("Invalid OCR job lineage.");
-  for (const [file, expected] of [[path.join(job, "original.pdf"), o.pdfSha256], [path.join(job, o.pageFilename), o.sha256],
-    [r.sourcePaths?.originalPdf, o.pdfSha256], [r.sourcePaths?.originalPage, o.sha256]]) {
+  const legacyPdf = !o?.sourceKind && o?.pdfFilename === "original.pdf" && validHash(o?.pdfSha256);
+  const sourceKind = o?.sourceKind ?? (legacyPdf ? "pdf" : null);
+  const sourceFilename = o?.sourceFilename ?? (legacyPdf ? "original.pdf" : null);
+  const sourceSha256 = o?.sourceSha256 ?? (legacyPdf ? o.pdfSha256 : null);
+  const pageMimeType = o?.pageMimeType ?? (legacyPdf && o?.pageFilename?.endsWith(".png") ? "image/png" : null);
+  if (r.schemaVersion !== 2 || !["pdf", "ainote-desktop"].includes(sourceKind)
+    || sourceFilename !== (sourceKind === "pdf" ? "original.pdf" : "original-source.json")
+    || !Number.isInteger(o.pageNumber) || o.pageNumber < 1 || o.pageNumber > 500
+    || !new RegExp(`^page-${String(o.pageNumber).padStart(3, "0")}\\.(?:png|jpe?g)$`, "i").test(o.pageFilename)
+    || !["image/png", "image/jpeg"].includes(pageMimeType) || !validHash(o.sha256) || !validHash(sourceSha256)
+    || (sourceKind === "pdf" && (o.pdfFilename !== "original.pdf" || o.pdfSha256 !== sourceSha256))) throw new Error("Invalid OCR job lineage.");
+  for (const [file, expected] of [[path.join(job, sourceFilename), sourceSha256], [path.join(job, o.pageFilename), o.sha256],
+    [r.sourcePaths?.originalSource ?? r.sourcePaths?.originalPdf, sourceSha256], [r.sourcePaths?.originalPage, o.sha256]]) {
     if (!string(file) || hash(await bytes(file, 512 * 1024 * 1024)) !== expected) throw new Error("Original hash changed or Original missing.");
   }
-  const info = pngInfo(await bytes(path.join(job, o.pageFilename)));
+  const info = sourceImageInfo(await bytes(path.join(job, o.pageFilename)), pageMimeType);
   if (info.width !== o.width || info.height !== o.height) throw new Error("Original dimensions changed.");
   const rawBytes = await bytes(path.join(job, "ocr-raw.json"), 4 * 1024 * 1024);
   const raw = validateExtraction(JSON.parse(rawBytes.toString()), o);

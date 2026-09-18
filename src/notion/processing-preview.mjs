@@ -38,7 +38,7 @@ export function serializeDevelopmentPageBody({ metadata: m, metadataSha256, raw,
   for (const item of layout.blocks) blocks.push(bullet(`${item.id}: ${item.type}; position: ${item.position}; bbox: ${printable(item.bbox)}; ${item.description}`));
   blocks.push(heading(2, "Provenance"),
     bullet(`Processing metadata SHA-256: ${metadataSha256}`),
-    bullet(`Original PDF SHA-256: ${m.original.pdfSha256}`), bullet(`Original page SHA-256: ${m.original.sha256}`),
+    bullet(`Original source SHA-256: ${m.original.sourceSha256 ?? m.original.pdfSha256}`), bullet(`Original page SHA-256: ${m.original.sha256}`),
     bullet(`OCR raw SHA-256: ${m.ocr.rawSha256}`), bullet(`OCR normalized SHA-256: ${m.ocr.normalizedSha256}`),
     bullet(`Layout SHA-256: ${m.ocr.layoutSha256}`));
   for (const mode of ["clean", "interpreted"]) {
@@ -78,8 +78,8 @@ export function serializeUserReviewSection({ reviewState, returnTarget, defaultR
   return { schemaVersion: 1, profile: "user", evaluation: review, reasons: [...reasons], children };
 }
 
-export function serializeUserPageBody({ uploads, reviewState = "Approved", returnTarget = "Use Default", defaultReturnMode = "clean", reasons = [] } = {}) {
-  const required = ["original.pdf", "page-002.png", "clean.png", "interpreted.png"];
+export function serializeUserPageBody({ uploads, originalSourceFilename = "original.pdf", originalPageFilename = "page-002.png", reviewState = "Approved", returnTarget = "Use Default", defaultReturnMode = "clean", reasons = [] } = {}) {
+  const required = [originalSourceFilename, originalPageFilename, "clean.png", "interpreted.png"];
   if (!uploads || required.some(name => !/^[a-f0-9-]{32,36}$/i.test(uploads[name] ?? ""))) {
     throw new Error("Four completed User file uploads are required.");
   }
@@ -88,8 +88,8 @@ export function serializeUserPageBody({ uploads, reviewState = "Approved", retur
   const uploaded = name => ({ type: "file_upload", file_upload: { id: uploads[name] } });
   return { schemaVersion: 1, profile: "user", format: "notion-blocks", children: [
     heading(2, "Original"),
-    { object: "block", type: "image", image: uploaded("page-002.png") },
-    { object: "block", type: "file", file: uploaded("original.pdf") },
+    { object: "block", type: "image", image: uploaded(originalPageFilename) },
+    { object: "block", type: "file", file: uploaded(originalSourceFilename) },
     heading(2, "Clean"),
     { object: "block", type: "image", image: uploaded("clean.png") },
     heading(2, "Interpreted"),
@@ -148,11 +148,14 @@ export async function prepareProcessingNotionPreview({ job, config, profile: req
     decisionSource: "auto-review", reasons: autoReview.reasons }) : createPendingReview({ metadata: { fixtureId: `processed-${metadataSha256}` } });
   const reviewState = autoReview?.reviewState ?? "Pending Review";
   const asset = (filename, sha256, mimeType, extra = {}) => ({ filename, sha256, mimeType, ...extra });
+  const originalSourceFilename = m.original.sourceFilename ?? m.original.pdfFilename;
+  const originalSourceSha256 = m.original.sourceSha256 ?? m.original.pdfSha256;
+  const originalSourceMimeType = m.original.sourceKind === "ainote-desktop" ? "application/json" : "application/pdf";
   const properties = [
     { field: names.title, logicalField: "Title", resolution: resolutions.title, type: "title", value: `AI processed page ${m.original.pageNumber}` },
-    { field: names.originalFile, type: "files", assets: [asset("original.pdf", m.original.pdfSha256, "application/pdf"),
-      asset(m.original.pageFilename, m.original.sha256, "image/png", { width: m.original.width, height: m.original.height })] },
-    ...(profile === "development" ? [{ field: names.originalSha, type: "rich_text", value: m.original.pdfSha256 }] : []),
+    { field: names.originalFile, type: "files", assets: [asset(originalSourceFilename, originalSourceSha256, originalSourceMimeType),
+      asset(m.original.pageFilename, m.original.sha256, m.original.pageMimeType ?? "image/png", { width: m.original.width, height: m.original.height })] },
+    ...(profile === "development" ? [{ field: names.originalSha, type: "rich_text", value: originalSourceSha256 }] : []),
     ...["clean", "interpreted"].flatMap(mode => [
       { field: names[`${mode}File`], type: "files", assets: [asset(m.outputs[mode].filename, m.outputs[mode].sha256, "image/png", { width: m.outputs[mode].width, height: m.outputs[mode].height })] },
       ...(profile === "development" ? [{ field: names[`${mode}Sha`], type: "rich_text", value: m.outputs[mode].sha256 }] : []),
@@ -166,8 +169,8 @@ export async function prepareProcessingNotionPreview({ job, config, profile: req
       asset("ocr-normalized.json", m.ocr.normalizedSha256, "application/json"), asset("layout.json", m.ocr.layoutSha256, "application/json")],
       textBlockCount: normalized.blocks.length, needsReviewCount: normalized.blocks.filter(b => b.needsReview).length },
     { section: "Provenance / modes", kind: "serialized Notion page body", value: {
-      processingMetadataSha256: metadataSha256, sourcePage: m.original.pageNumber, originalPdfSha256: m.original.pdfSha256,
-      originalPageSha256: m.original.sha256, ocr: m.ocr,
+      processingMetadataSha256: metadataSha256, sourcePage: m.original.pageNumber, sourceKind: m.original.sourceKind,
+      originalSourceSha256, originalPageSha256: m.original.sha256, ocr: m.ocr,
       modes: Object.fromEntries(["clean", "interpreted"].map(mode => [mode, {
         attempt: m.outputs[mode].attempt, prompt: m.prompts[mode], outputSha256: m.outputs[mode].sha256,
         meaning: mode === "clean" ? "Typed text; minimal restructuring" : "Typed text; stronger restructuring",
@@ -192,7 +195,7 @@ export async function prepareProcessingNotionPreview({ job, config, profile: req
   if (pageBody) Object.defineProperty(result, "developmentPageBody", { value: pageBody, enumerable: false });
   if (profile === "user") Object.defineProperty(result, "userPageBodyPlan", { value: {
     schemaVersion: 1, profile: "user", sections: [
-      { heading: "Original", assets: ["page-002.png", "original.pdf"] },
+      { heading: "Original", assets: [m.original.pageFilename, originalSourceFilename] },
       { heading: "Clean", assets: ["clean.png"] },
       { heading: "Interpreted", assets: ["interpreted.png"] },
       { heading: "Review", values: [returnChoice.value, reviewState, ...autoReview.reasons] },
@@ -222,7 +225,7 @@ export function formatProcessingNotionPreview(plan) {
   for (const p of plan.properties) {
     if (p.assets) for (const a of p.assets) lines.push(`  ${a.filename} → ${p.field} (${a.mimeType})`, `    SHA-256: ${a.sha256}`);
   }
-  lines.push("  Original SHA-256 field: PDF hash; page PNG hash retained in provenance", "", `Page content: ${plan.developmentPageBody.children.length} serialized Notion blocks`);
+  lines.push("  Original SHA-256 field: source manifest/PDF hash; page image hash retained in provenance", "", `Page content: ${plan.developmentPageBody.children.length} serialized Notion blocks`);
   for (const section of plan.bodySections) {
     lines.push(`  ${section.section}: ${section.assets ? section.assets.map(a => a.filename).join(", ") : "source hashes, OCR provider, prompt versions/hashes, selected attempts, mode differences"}`);
   }

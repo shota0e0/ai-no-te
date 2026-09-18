@@ -21,7 +21,7 @@ The [user manifest](../schemas/notion-user.json) and [development manifest](../s
 | User property | Type | Meaning |
 |---|---|---|
 | Title | title | Note name |
-| Original | files | Unchanged PDF and selected rendered page PNG |
+| Original | files | Unchanged Desktop source manifest or PDF, plus the selected Original page image |
 | Clean | files | Typed text with minimal rearrangement |
 | Interpreted | files | Typed text with stronger restructuring |
 | Return target | select | Use Default / Clean / Interpreted; starts Use Default |
@@ -29,12 +29,12 @@ The [user manifest](../schemas/notion-user.json) and [development manifest](../s
 
 User records contain no OCR JSON, prompt hashes, logs, model debug data or failure diagnostics. Both images are present even when Clean is selected for return. The CLI shows `Use Default (Clean)` initially; the stored select value is `Use Default`. If the local default is explicitly changed to Interpreted, the preview resolves and displays it accordingly. `--return-target clean` or `--return-target interpreted` changes only the proposed record's intent, not local defaults or approval.
 
-The development schema adds `Original SHA-256`, `Clean SHA-256`, and `Interpreted SHA-256` as rich_text fields. Original holds both PDF and PNG; the Original hash property identifies the PDF, and page hash remains in provenance. These three hash fields are **not requirements for user databases**.
+The development schema adds `Original SHA-256`, `Clean SHA-256`, and `Interpreted SHA-256` as rich_text fields. Original holds the Desktop source manifest or PDF together with the selected page image. The Original hash property identifies that source manifest/PDF, and the page hash remains in provenance. These three hash fields are **not requirements for user databases**.
 
 Development page content also includes:
 
 - OCR / Layout: readable normalized text, formatted raw OCR blocks, layout items, and uncertainty counts.
-- Provenance / modes: PDF/page hashes, OCR provider/model, prompt versions/hashes, selected attempts, output hashes and mode differences, visual-review attestation.
+- Provenance / modes: source/page hashes, OCR provider/model, prompt versions/hashes, selected attempts, output hashes and mode differences, visual-review attestation.
 - Processing / diagnostics: generation snapshot status/date, image provider/model information, all recorded attempt statuses/hashes, failure reasons and incomplete attempts.
 
 Processing snapshot statuses are historical. A separate later visual PASS does not rewrite them. Failed images, full request files with private paths, credentials and destination IDs are not included as planned uploads. Private job files remain available locally for deeper debugging. Development details can include sensitive note-derived content or failure reasons: never publish these plans or show development output to normal users by default.

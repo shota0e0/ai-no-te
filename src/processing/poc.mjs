@@ -38,24 +38,50 @@ export async function inspectOriginal(input) {
   if (typeof input !== "string" || !input) throw new Error("--input is required.");
   const originalPage = path.resolve(input);
   const pageBytes = await bytesAt(originalPage);
-  const pageInfo = pngInfo(pageBytes);
+  const pageInfo = path.extname(originalPage).toLowerCase() === ".png" ? pngInfo(pageBytes) : jpegInfo(pageBytes);
   const directory = path.dirname(originalPage);
-  const lineage = JSON.parse((await bytesAt(path.join(directory, "metadata.json"), 4 * 1024 * 1024)).toString());
+  const lineageBytes = await bytesAt(path.join(directory, "metadata.json"), 4 * 1024 * 1024);
+  const lineage = JSON.parse(lineageBytes.toString());
   const page = lineage.generatedFiles?.find(item => item.filename === path.basename(originalPage));
-  if (lineage.schemaVersion !== 1 || lineage.status !== "complete" || !page || !Number.isInteger(page.pageNumber)
+  const sourceKind = lineage.schemaVersion === 2 && lineage.source?.kind === "ainote-desktop" ? "ainote-desktop" : "pdf";
+  if (![1, 2].includes(lineage.schemaVersion) || lineage.status !== "complete" || !page || !Number.isInteger(page.pageNumber)
     || page.pageNumber < 1 || page.pageNumber > lineage.source?.pageCount || !lineage.selectedPages?.includes(page.pageNumber)
-    || page.filename !== `page-${String(page.pageNumber).padStart(3, "0")}.png`
+    || !new RegExp(`^page-${String(page.pageNumber).padStart(3, "0")}\\.(?:png|jpe?g)$`, "i").test(page.filename)
     || page.sha256 !== pageInfo.sha256 || page.width !== pageInfo.width || page.height !== pageInfo.height
-    || lineage.source.filename !== "original.pdf") throw new Error("Input must match a complete PDF Input job and its page hash/dimensions.");
-  const originalPdf = path.join(directory, "original.pdf");
-  const pdfBytes = await bytesAt(originalPdf, 512 * 1024 * 1024);
+    || (sourceKind === "pdf" && lineage.source.filename !== "original.pdf")
+    || (sourceKind === "ainote-desktop" && (!lineage.source.readOnly || lineage.sourceMutation !== 0 || lineage.ainoteWrites !== 0))) {
+    throw new Error("Input must match a complete PDF or read-only Desktop Input job and its page hash/dimensions.");
+  }
+  if (sourceKind === "ainote-desktop") {
+    return { originalPage, originalSource: path.join(directory, "metadata.json"), sourceBytes: lineageBytes, sourceKind,
+      sourceFilename: "original-source.json", sourceSha256: sha256(lineageBytes), pageBytes, pageInfo, page, lineage };
+  }
+  const originalPdf = path.join(directory, "original.pdf"), pdfBytes = await bytesAt(originalPdf, 512 * 1024 * 1024);
   if (!pdfBytes.subarray(0, 1024).includes(Buffer.from("%PDF-")) || sha256(pdfBytes) !== lineage.source.sha256) throw new Error("Original PDF hash does not match PDF Input metadata.");
-  return { originalPage, originalPdf, pageBytes, pdfBytes, pageInfo, page, lineage };
+  return { originalPage, originalPdf, originalSource: originalPdf, pageBytes, pdfBytes, sourceBytes: pdfBytes,
+    sourceKind, sourceFilename: "original.pdf", sourceSha256: lineage.source.sha256, pageInfo, page, lineage };
+}
+
+function jpegInfo(bytes) {
+  if (bytes[0] !== 0xff || bytes[1] !== 0xd8) throw new Error("Input page must be PNG or JPEG.");
+  let offset = 2;
+  while (offset + 9 < bytes.length) {
+    if (bytes[offset] !== 0xff) { offset += 1; continue; }
+    const marker = bytes[offset + 1], length = bytes.readUInt16BE(offset + 2);
+    if ([0xc0,0xc1,0xc2,0xc3,0xc5,0xc6,0xc7,0xc9,0xca,0xcb,0xcd,0xce,0xcf].includes(marker)) {
+      const height = bytes.readUInt16BE(offset + 5), width = bytes.readUInt16BE(offset + 7);
+      if (width > 0 && height > 0 && width * height <= 100_000_000) return { width, height, sha256: sha256(bytes) };
+    }
+    if (!length || length < 2) break;
+    offset += 2 + length;
+  }
+  throw new Error("Input JPEG dimensions are unavailable.");
 }
 
 export async function prepareProcessing({ input, mode, output }) {
   modeCheck(mode);
-  const { originalPage, originalPdf, pageBytes, pdfBytes, pageInfo, page, lineage } = await inspectOriginal(input);
+  const { originalPage, originalPdf, pageBytes, pdfBytes, pageInfo, page, lineage, sourceKind } = await inspectOriginal(input);
+  if (sourceKind !== "pdf") throw new Error("Historical image-only processing accepts PDF Input only; use the typed OCR workflow for Desktop Input.");
   const prompt = await loadPrompt(mode);
   let job;
   if (output !== undefined) {

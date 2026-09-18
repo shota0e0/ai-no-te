@@ -24,8 +24,7 @@ Original is never overwritten by the supplied flows.
 
 ```text
 AINOTE
-  -> manual PDF export
-  -> PDF Input Adapter
+  -> Experimental Desktop Input (read only)
   -> OCR / text extraction
   -> Clean + Interpreted
   -> User Notion
@@ -38,9 +37,9 @@ AINOTE
 
 This flow has been confirmed with real data through the User Notion review stage. Private notes, credentials, live records, and local evidence are not publication candidates.
 
-The public flow uses PDF export deliberately. This is not because a direct AINOTE -> Notion -> AINOTE loop was technically impossible. An earlier Experimental PoC completed that round trip without PDF export by relying on undocumented AINOTE Desktop behavior.
+Experimental Desktop Input is now the preferred public input route. It reads selected page resources without changing the source note and creates a local processing package with hash lineage. It relies on undocumented, version-specific Desktop behavior and may stop working after an update.
 
-The direct path offers a more natural user experience. Following clarification that community exploration and sharing are acceptable, AI-no-Te now includes the Experimental Desktop Return portion of that path. Direct Desktop input remains a separate lane; the current public input flow continues to use PDF export as the verified, official-friendly option.
+Manual PDF export remains available as the official-friendly, verified fallback and troubleshooting route. Both inputs feed the same OCR, Clean, Interpreted, Notion, and Return contracts.
 
 The public distribution now includes an Experimental Desktop Return for creating a new image-bearing AINOTE note. The published official OpenModel image route remains unconfirmed; the Experimental route is separate, undocumented, version-dependent, and explicitly invoked.
 
@@ -48,6 +47,7 @@ The public distribution now includes an Experimental Desktop Return for creating
 
 | Capability | Status |
 |---|---|
+| Experimental Desktop direct input | Available in the public CLI; read-only and version-dependent |
 | Real AINOTE PDF export input | Confirmed with AINOTE Air 2 |
 | PDF page inspection and 300 DPI PNG rendering | Confirmed |
 | OCR / text extraction | Confirmed, operator-mediated |
@@ -81,7 +81,7 @@ Its six fields are:
 | Field | Purpose |
 |---|---|
 | Title | Note name |
-| Original | Original PDF and selected page image |
+| Original | Desktop source manifest or Original PDF, plus the selected page image |
 | Clean | Typed result with minimal rearrangement |
 | Interpreted | Typed result with stronger restructuring |
 | Return target | Use Default, Clean, or Interpreted |
@@ -140,6 +140,7 @@ Text-only note creation is useful evidence, but it is not treated as completion 
 
 The public repository contains:
 
+- the user-facing Experimental Desktop Input runtime and page/hash lineage;
 - the local PDF Input Adapter and hash lineage;
 - the operator-mediated OCR/Clean/Interpreted workflow;
 - User and Development Notion schemas and offline preview logic;
@@ -186,6 +187,8 @@ npm run validate:public
 There are no third-party npm runtime packages. PDF Input additionally requires an external Poppler installation (`pdfinfo` and `pdftoppm`); Poppler is not bundled or installed automatically.
 
 ## PDF Input
+
+PDF Input is the fallback when Experimental Desktop Input is unavailable or incompatible. For the preferred direct route, see [Experimental Desktop Input](docs/experimental-desktop-input.md).
 
 Manually export an AINOTE note as PDF, inspect it, and render explicitly selected pages:
 
