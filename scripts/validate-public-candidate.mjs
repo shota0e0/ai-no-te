@@ -145,6 +145,11 @@ for (const prohibited of ["Return state", "Result SHA-256", "AINOTE return ID", 
 
 const readme = await readFile(path.join(root, "README.md"), "utf8");
 const readmeJa = await readFile(path.join(root, "README.ja.md"), "utf8");
+const startHere = await readFile(path.join(root, "START_HERE.txt"), "utf8");
+const releaseNotes = await readFile(path.join(root, "docs/release-notes-public-alpha.md"), "utf8");
+for (const file of ["START_HERE.txt", "docs/release-notes-public-alpha.md"]) {
+  if (!publicFiles.includes(file)) fail(`beginner release document missing from PUBLIC: ${file}`);
+}
 const projectTitle = "# アイノテ - AI-no-Te -";
 if (readme.split(/\r?\n/, 1)[0] !== projectTitle || readmeJa.split(/\r?\n/, 1)[0] !== projectTitle) {
   fail("public project title is inconsistent");
@@ -171,6 +176,14 @@ if (!/\[Getting Started guide\]\(docs\/getting-started\.md\)/.test(readme)) {
 }
 if (!/\[Getting Startedガイド\]\(docs\/getting-started\.ja\.md\)/.test(readmeJa)) {
   fail("README.ja Getting Started link is missing");
+}
+for (const [label, document] of [["README", readme], ["release notes", releaseNotes]]) {
+  for (const required of ["independent community project", "Node.js 20", "Experimental Desktop", "not an official"]) {
+    if (!document.includes(required)) fail(`${label} beginner-release guidance missing: ${required}`);
+  }
+}
+for (const required of ["公式製品・公式ツールではありません", "Node.js 20", "AINOTE Desktop", "AINOTE Skill", "Original", "ランチャー", "docs/getting-started.ja.md"]) {
+  if (!startHere.includes(required)) fail(`START_HERE guidance missing: ${required}`);
 }
 const gettingStarted = await readFile(path.join(root, "docs/getting-started.md"), "utf8");
 const gettingStartedJa = await readFile(path.join(root, "docs/getting-started.ja.md"), "utf8");

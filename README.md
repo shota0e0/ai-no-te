@@ -2,7 +2,9 @@
 
 [日本語版](README.ja.md)
 
-AI-no-Te is an independent project connecting handwritten AINOTE notes, AI-assisted processing, Notion review, and the optional return of results to a new AINOTE note.
+AI-no-Te connects handwritten AINOTE notes, AI-assisted processing, Notion review, and the optional return of results to a new AINOTE note.
+
+**AI-no-Te is an independent community project. It is not an official product or tool of AINOTE, iFLYTEK, or Notion.**
 
 This repository is a public technical record for the AINOTE product and engineering teams, technical reviewers, and collaborators. It documents what has been confirmed with real data, what the public code can reproduce, and where the official and experimental paths diverge.
 
@@ -14,7 +16,7 @@ People should not have to change how they think or write for an AI system. AI-no
 
 The workflow keeps three roles separate:
 
-- **Original**: the exported source, preserved without overwrite.
+- **Original**: the source data read from AINOTE, preserved without modification or overwrite.
 - **Clean**: typed content with meaning, drawings, and broad layout retained.
 - **Interpreted**: the same source reorganized more strongly without inventing facts.
 
@@ -41,7 +43,7 @@ Experimental Desktop Input is now the preferred public input route. It reads sel
 
 Manual PDF export remains available as the official-friendly, verified fallback and troubleshooting route. Both inputs feed the same OCR, Clean, Interpreted, Notion, and Return contracts.
 
-The public distribution now includes an Experimental Desktop Return for creating a new image-bearing AINOTE note. The published official OpenModel image route remains unconfirmed; the Experimental route is separate, undocumented, version-dependent, and explicitly invoked.
+The public distribution now includes an Experimental Desktop Return for creating a new image-bearing note in AINOTE. The published official OpenModel image route remains unconfirmed; the Experimental route is separate, undocumented, version-dependent, and explicitly invoked.
 
 ## Current status
 
@@ -132,9 +134,7 @@ The earlier implementation under `experimental/ainote-return/` remains as PoC an
 
 ### Official and Experimental image Return
 
-The official image-capable route remains parked because no published OpenModel image insertion or attachment route has been confirmed. The Experimental Desktop route is available for users who accept its compatibility limits. If an official image-capable route becomes available, it can replace the Desktop transport without changing Original/Clean/Interpreted selection or the Notion review contract.
-
-Text-only note creation is useful evidence, but it is not treated as completion of the AI-no-Te loop because the selected Clean or Interpreted image is not returned.
+The official OpenModel route still has no confirmed way to return a Clean or Interpreted image. Separately, the current public Experimental Desktop Return has completed the image-bearing AINOTE -> AI-no-Te -> Notion -> AINOTE round trip on real hardware. It remains undocumented, version-dependent, and optional. If an official image-capable route becomes available, it can replace the Desktop transport without changing Original/Clean/Interpreted selection or the Notion review contract.
 
 ## Public repository scope
 
@@ -185,6 +185,8 @@ npm run validate:public
 ```
 
 There are no third-party npm runtime packages. PDF Input additionally requires an external Poppler installation (`pdfinfo` and `pdftoppm`); Poppler is not bundled or installed automatically.
+
+The current Public Alpha requires Node.js 20 or newer. A launcher or a distribution with Node.js bundled is being considered for a future version to simplify installation; this is not yet committed functionality.
 
 ## PDF Input
 
@@ -256,6 +258,7 @@ AI-no-Te is an independent experimental project. It is not an official product o
 - Keep normal review limited to the five explicit exception categories.
 - Replace the Experimental Desktop transport if an official image-capable route becomes available.
 - Keep Experimental Return explicit, version-dependent, new-note-only, and separate from the official adapter.
+- Consider a launcher or bundled Node.js distribution to simplify setup for general users.
 - Collect reproducible evidence without publishing private notes or identifiers.
 
 ## License

@@ -16,9 +16,9 @@ Experimental Desktop Input, Public Core, and Experimental AINOTE Return have dif
 
 ## 2. Install
 
-Public Core requires Node.js 20 or newer and supports Windows 10/11, macOS, and Linux.
+The current Public Alpha requires Node.js 20 or newer and supports Windows 10/11, macOS, and Linux. A launcher or a distribution with Node.js bundled is being considered for a future version to simplify setup; it is not available yet.
 
-Clone the repository from its published repository URL, or download and extract its source archive. Open a terminal in the repository root, then run:
+Clone the repository from its published repository URL, or download and extract the beginner-facing Windows Release ZIP or source archive. Start with `START_HERE.txt`, then open a terminal in the extracted directory and run:
 
 ```console
 npm install --ignore-scripts

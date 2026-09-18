@@ -2,7 +2,9 @@
 
 [English](README.md)
 
-AI-no-Teは、AINOTEの手書きノートをAIで整理し、Notionで確認して、必要な結果を新しいAINOTEノートとして戻すところまでをつなぐ独立プロジェクトです。
+AI-no-Teは、AINOTEの手書きノートをAIで整理し、Notionで確認して、必要な結果を新しいAINOTEノートとして戻すところまでをつなぐプロジェクトです。
+
+**AI-no-Teは独立したコミュニティプロジェクトです。AINOTE、iFLYTEK、Notionの公式製品・公式ツールではありません。**
 
 現在のリポジトリは、一般ユーザー向けの導入ツールだけではなく、AINOTEのプロダクト・開発チーム、技術レビューを行う方、共同開発者が、目的と到達点、技術上の制約を確認できる公開記録として整理しています。
 
@@ -14,7 +16,7 @@ AIを使うために、人が考え方や書き方を変える必要はありま
 
 ノートは次の3つに分けて扱います。
 
-- **Original**: AINOTEから書き出した元データ。上書きせずに残します。
+- **Original**: AINOTEから読み取った元データです。内容を変更せず、そのまま残します。
 - **Clean**: 意味や図、おおまかな配置を保ちながら、手書き文字を活字にした結果です。
 - **Interpreted**: 同じ内容をもとに、構成や配置をより大きく整理した結果です。元にない事実は加えません。
 
@@ -41,7 +43,7 @@ AINOTE
 
 PDF Inputも削除しません。公式に案内された書き出し方法を使いたい場合や、Desktop Inputが動かない場合のfallback、互換性確認、トラブル調査に使えます。どちらから始めても、その後は同じOCR、Clean、Interpreted、Notion、Returnの流れへ進みます。
 
-公開版には、画像を含む新しいAINOTEノートを作るExperimental Desktop Returnを含めます。公式に公開されたOpenModelの画像経路は引き続き未確認です。Experimental経路はそれとは別で、公開されていないDesktopの動作を使い、明示的に実行した場合だけ動きます。
+公開版には、画像を含む新しいノートをAINOTE上に作成するExperimental Desktop Returnを含めます。公式に公開されたOpenModelの画像経路は引き続き未確認です。Experimental経路はそれとは別で、公開されていないDesktopの動作を使い、明示的に実行した場合だけ動きます。
 
 ## 現在の状況
 
@@ -91,7 +93,7 @@ OCR、配置、生成元、プロンプト、モデル、ハッシュ、失敗�
 
 ### 例外がある場合だけ人が確認する
 
-この方針を初めて説明するときはHuman-on-exceptionと呼んでいます。`Pending Review`は、処理中または判定前だけ使う一時状態です。処理が終わったUserレコードは、次の5つに当てはまらなければ`Approved`になります。
+通常は自動で処理を進め、例外がある場合だけ人が確認します。この方式をHuman-on-exceptionと呼びます。`Pending Review`は、処理中または判定前だけ使う一時状態です。処理が終わったUserレコードは、次の5つに当てはまらなければ`Approved`になります。
 
 1. OCR結果に明らかな異常がある
 2. 必要なファイルがない
@@ -132,9 +134,7 @@ Markdown画像の実機確認では、HTTPS、data URI、ローカルパス、`f
 
 ### 公式経路とExperimental経路
 
-画像を扱える公式経路はまだ確認できていないため、公式OpenModelでの画像返却は保留のままです。互換性上の制限を理解したユーザーはExperimental Desktop Returnを選べます。将来、公式の画像挿入・添付経路が公開された場合は、Original／Clean／Interpretedの選択やNotionの確認方法を変えずに通信部分を差し替えられます。
-
-テキストノートを作れることは大切な確認結果ですが、選択したClean／Interpreted画像を戻せないため、AI-no-Teの一連の流れが完成したとは扱いません。
+公式OpenModel経路だけでは、Clean／Interpreted画像を戻す方法をまだ確認できていません。一方、現在の公開版ではExperimental Desktop Returnを使い、画像を含むAINOTE → AI-no-Te → Notion → AINOTEの往復を実機で確認しています。この経路は公開されていない動作と特定バージョンに依存する任意機能です。将来、公式の画像挿入・添付経路が公開された場合は、Original／Clean／Interpretedの選択やNotionの確認方法を変えずに通信部分を差し替えられます。
 
 ## 公開リポジトリに含むもの
 
@@ -183,6 +183,8 @@ npm run validate:public
 ```
 
 実行時に使う外部npmパッケージはありません。PDF入力には、別途Popplerの`pdfinfo`と`pdftoppm`が必要です。Popplerは同梱せず、自動インストールも行いません。
+
+現在のPublic AlphaではNode.js 20以上が必要です。次版では、導入を簡単にするため、ランチャーまたはNode.js同梱方式を検討しています。現時点で提供を確約するものではありません。
 
 ## PDF入力
 
@@ -254,6 +256,7 @@ AI-no-Teは独立した実験プロジェクトです。AINOTE、iFLYTEK、Notio
 - 通常の自動確認は、5つの例外だけを対象にする。
 - 画像を扱える公式経路が公開された場合は、Experimental Desktop transportを差し替える。
 - Experimental Returnを明示実行・新規ノート作成に限定し、公式adapterと分けて維持する。
+- 一般ユーザーが導入しやすいランチャーまたはNode.js同梱方式を検討する。
 - 実ノートや識別情報を公開せず、再現できる技術記録を増やす。
 
 ## ライセンス

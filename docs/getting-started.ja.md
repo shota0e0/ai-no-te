@@ -16,9 +16,9 @@ Experimental Desktop Input、通常の機能、Experimental AINOTE Returnでは�
 
 ## 2. インストール
 
-通常の機能にはNode.js 20以上が必要です。Windows 10/11、macOS、Linuxで動かせます。
+現在のPublic AlphaではNode.js 20以上が必要です。Windows 10/11、macOS、Linuxで動かせます。次版では、導入を簡単にするため、ランチャーまたはNode.js同梱方式を検討しています。現時点ではまだ利用できません。
 
-公開されたリポジトリをクローンするか、ソースのアーカイブをダウンロードして展開します。リポジトリのルートでターミナルを開き、次のコマンドを実行してください。
+公開されたリポジトリをクローンするか、初心者向けWindows Release ZIPまたはソースのアーカイブをダウンロードして展開します。まず`START_HERE.txt`を読み、展開先でターミナルを開いて次のコマンドを実行してください。
 
 ```console
 npm install --ignore-scripts

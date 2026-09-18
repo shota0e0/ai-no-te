@@ -1,0 +1,16 @@
+AI-no-Te Public Alpha — はじめに
+================================
+
+AI-no-Teは、AINOTEのノートを読み取り、Clean／Interpretedとして整理し、Notionで確認した結果を新しいAINOTEノートへ戻すためのPublic Alphaです。
+
+AI-no-Teは独立したコミュニティプロジェクトです。AINOTE、iFLYTEK、Notionの公式製品・公式ツールではありません。
+
+このZIPはWindowsユーザー向けです。現在のPublic Alphaを使うにはNode.js 20以上が必要です。機能によってはAINOTE DesktopとAINOTE Skillも必要です。
+
+最初に docs/getting-started.ja.md を開き、インストール方法と安全上の注意を確認してください。英語版は docs/getting-started.md です。
+
+Experimental Desktop Input／Returnは、公開されていないAINOTE Desktopの動作と特定バージョンに依存します。AINOTEの更新後に動かなくなる可能性があります。
+
+AI-no-TeはOriginalを更新・削除・上書きしません。Experimental Desktop Returnは、結果を新しいAINOTEノートとして作成します。実行前に大切なデータをバックアップし、最初は重要でないノートで確認してください。
+
+次版では、導入を簡単にするため、ランチャーまたはNode.js同梱方式を検討しています。現時点ではまだ利用できません。
